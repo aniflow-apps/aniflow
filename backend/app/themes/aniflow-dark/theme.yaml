@@ -1,0 +1,81 @@
+# AniFlow Dark - the look AniFlow has always had.
+#
+# This file is also the reference for writing your own. Copy the folder into
+# your config directory (config/themes/my-theme/) and edit it there: a user
+# theme replaces a built-in one of the same name, and keeping it in config
+# means an update cannot overwrite your work.
+#
+# Every value is optional. Whatever you leave out keeps AniFlow's own, so a
+# theme that only changes the accent colour is four lines long.
+
+name: AniFlow Dark
+author: AniFlow
+version: "1.0"
+description: The calm dark look AniFlow ships with.
+
+# Which theme format this file is written for. AniFlow refuses a theme
+# written for a format it does not know rather than half-applying it, so
+# leave this alone unless you are following an upgrade note.
+themes_api: 1
+
+# What the browser paints its own widgets with - dropdown popups, scrollbars,
+# focus rings. None of those are AniFlow's markup, so no colour above reaches
+# them. dark or light.
+color_scheme: dark
+
+# The colours. Names match the CSS custom properties in
+# frontend/src/styles.css, so that file is the map of what each one paints.
+#
+# Values may be hex (#rgb, #rrggbb, #rrggbbaa), rgb()/rgba()/hsl()/hsla(),
+# or transparent. Anything else is refused and reported in Settings.
+colors:
+  # The page, and the darker well behind the sidebar.
+  bg: "#282e38"
+  bg-deep: "#22262f"
+
+  # Panels sit *above* the page - only a few points apart, which is what
+  # keeps this palette calm rather than stripey.
+  surface: "#2c333e"
+  surface-2: "#282e38"
+  surface-3: "#353d4a"
+  # Used for a subtle lift where a panel overlaps another. Optional.
+  surface-raised: "rgba(255, 255, 255, 0.04)"
+
+  # Text inputs and dropdowns, deliberately darker than the panel they are on.
+  field: "#1e2027"
+
+  border: "#21242b"
+  border-strong: "#353d4a"
+
+  # Body text, then two steps quieter: labels, then hints.
+  text: "#cfd8e3"
+  text-dim: "#a9b4c2"
+  text-mute: "#8a94a3"
+
+  # Links, buttons and the selected tab. accent-ink is what is written *on*
+  # a filled accent button, so it has to contrast with accent, not with bg.
+  accent: "#44a3ff"
+  accent-strong: "#64b3ff"
+  accent-soft: "#85c3ff1a"
+  accent-ink: "#010f1c"
+  accent-nav: "#a9d5ff"
+
+  # Something worked.
+  success: "#10c469"
+  success-border: "#0e9b54"
+  success-bg: "#10c4691f"
+
+  # Something needs a look, but nothing is broken.
+  warning: "#f9c851"
+  warning-border: "#b8912f"
+
+  # Something failed, or is about to delete your files.
+  danger: "#ff6c6c"
+  danger-border: "#b34b4b"
+  danger-bg: "#ff6c6c1f"
+
+# Corner rounding. A number with a CSS unit; px is the sensible one.
+radius:
+  lg: 10px
+  md: 8px
+  sm: 6px

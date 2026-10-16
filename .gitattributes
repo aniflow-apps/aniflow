@@ -1,0 +1,16 @@
+# Line endings, decided here rather than by whoever's editor saved last.
+#
+# `update.sh` runs on the NAS, and a shebang followed by a carriage return
+# makes Linux look for an interpreter called `/bin/sh`:
+#
+#     ./update.sh: bad interpreter: /bin/sh^M: no such file or directory
+#
+# The deploy script is robocopy, which copies bytes as they are, so the bytes
+# in this repository are the bytes that run.
+* text=auto
+
+# Anything executed by a shell, always LF - on every checkout, on every OS.
+*.sh text eol=lf
+Dockerfile text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf

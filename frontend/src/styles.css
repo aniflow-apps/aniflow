@@ -1,0 +1,2022 @@
+@import "@fontsource/sora/300.css";
+@import "@fontsource/sora/400.css";
+@import "@fontsource/sora/500.css";
+@import "@fontsource/sora/600.css";
+
+:root {
+  /* Shoko Web UI's own palette (Shoko-WebUI/src/css/theme-shoko-gray.css).
+     The page is the darker surface and panels sit *above* it - only four points
+     apart, which is what keeps that UI calm. */
+  --bg: #282e38;
+  --bg-deep: #22262f;
+  --surface: #2c333e;
+  --surface-2: #282e38;
+  --surface-3: #353d4a;
+  --field: #1e2027;
+
+  --border: #21242b;
+  --border-strong: #353d4a;
+
+  --text: #cfd8e3;
+  --text-dim: #a9b4c2;
+  --text-mute: #8a94a3;
+
+  --accent: #44a3ff;
+  --accent-strong: #64b3ff;
+  --accent-soft: #85c3ff1a;
+  --accent-ink: #010f1c;
+  /* The nav item's own text colour in Shoko. */
+  --accent-nav: #a9d5ff;
+
+  --success: #10c469;
+  --success-border: #0e9b54;
+  --success-bg: #10c4691f;
+
+  --warning: #f9c851;
+  --warning-border: #b8912f;
+
+  --danger: #ff6c6c;
+  --danger-border: #b34b4b;
+  --danger-bg: #ff6c6c1f;
+
+  --radius-lg: 10px;
+  --radius-md: 8px;
+  --radius-sm: 6px;
+
+  /* What the browser paints its own widgets with: dropdown popups,
+     scrollbars, focus rings, date pickers. A theme overrides this - the
+     bright one has to, or its dropdowns come back dark (build 92). */
+  color-scheme: dark;
+}
+
+@import "tailwindcss";
+
+:root {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  font-synthesis: none;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; min-height: 100vh; font-family: Sora, system-ui, -apple-system, 'Segoe UI', sans-serif; font-weight: 400; line-height: 1.6; }
+button { font: inherit; }
+
+/* Interactive feedback: hover lift + press squash on every control. */
+.button, .nav-item, .close, .icon-button, .input-clear button, .back-link, input, select, .search-result {
+  transition: background-color .15s ease, border-color .15s ease, color .15s ease,
+              box-shadow .15s ease, transform .12s ease;
+}
+.button:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0, 0, 0, .35); }
+.button:active:not(:disabled) { transform: translateY(0) scale(.97); box-shadow: none; }
+
+
+/* Every × in the app, wherever it is (build 124). Reported as *"if you hover
+   above them its does something, maybe animation or maybe color change, right
+   now its not noticeable you are above the x button."*
+
+   It was two problems wearing one face: `.close` changed a dim grey to white
+   and grew 12%, which is a change you can only see if you already know to
+   look for it - and `.icon-button`, which the calendar and the file panel
+   use, had no rule at all. So both are one control now, with a real target
+   under the pointer: the glyph goes to full contrast and a filled circle
+   appears behind it. The circle is the part that reads at a glance; colour
+   alone never did.
+
+   `:focus-visible` rather than `:focus`, so the ring appears for a keyboard
+   and not after a click. */
+.close, .icon-button {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  padding: 0;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--text-dim);
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+}
+.icon-button { font-size: 1.1rem; }
+.close:hover, .icon-button:hover,
+.close:focus-visible, .icon-button:focus-visible {
+  color: var(--text);
+  background: var(--surface-3);
+  transform: scale(1.08);
+}
+.close:focus-visible, .icon-button:focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+.close:active, .icon-button:active { transform: scale(.92); background: var(--border-strong); }
+.back-link:hover { color: var(--accent-strong); }
+.search-result:hover { background: var(--surface-2); }
+.anime-card:active { transform: translateY(-1px) scale(.985); }
+.episode, .source-row, .release-row, .attention-row, .calendar-card, .template-card {
+  transition: border-color .15s ease, background-color .15s ease, transform .12s ease;
+}
+.episode:hover { border-color: var(--accent); }
+input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible {
+  outline: 2px solid rgba(185, 176, 255, .45);
+  outline-offset: 1px;
+}
+
+.app-shell { min-height: 100vh; display: grid; grid-template-columns: 254px 1fr; }
+/* Pinned to the viewport so the status/version footer is visible on every
+   page. Without this the sidebar stretches to the full page height and
+   its bottom-aligned footer sits below the fold on any long page. */
+.sidebar { position: sticky; top: 0; align-self: start; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; gap: 30px; padding: 24px 14px; background: var(--surface-3); border-right: 1px solid var(--border); }
+.brand { display: flex; align-items: center; gap: 12px; padding: 0 8px; }
+/* The logo is its own artwork: no gradient plate behind it, and a fixed box
+   so a slow-loading image cannot shift the sidebar. */
+.brand-mark { flex: 0 0 auto; width: 52px; height: 52px; border-radius: var(--radius-md); object-fit: contain; }
+.brand strong, .brand small { display: block; }
+.brand small { margin-top: 2px; color: var(--text-mute); font-size: .7rem; line-height: 1.3; }
+nav { display: grid; gap: 5px; }
+.nav-item { display: flex; align-items: center; gap: 11px; cursor: pointer; text-align: left; color: var(--text-dim); background: transparent; border: 0; border-left: 2px solid transparent; border-radius: var(--radius-md); padding: 10px 12px; font-size: .9rem; }
+.nav-icon { flex: 0 0 auto; opacity: .8; }
+.nav-item:hover:not(.active) { color: var(--text); background: #bacfe41a; }
+.nav-item.active .nav-icon { opacity: 1; }
+/* The small numbers on the sidebar (build 210). */
+.nav-badge { margin-left: auto; min-width: 20px; height: 20px; padding: 0 6px; display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; font-size: .72rem; font-weight: 700; line-height: 1; color: #fff; background: var(--accent); font-variant-numeric: tabular-nums; }
+.nav-badge.error { background: var(--danger, #e06c75); }
+.nav-badge.warning { background: var(--warning); color: #1c1708; }
+.nav-item.active { color: var(--accent-nav); background: var(--accent-soft); border-left-color: var(--accent); font-weight: 500; }
+.health { margin-top: 0; display: flex; align-items: center; gap: 8px; padding: 10px 8px; color: var(--text-dim); font-size: .8rem; }
+.version-tag { margin-left: auto; color: var(--text-mute); font-size: .72rem; }
+.health-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--danger-border); }.health-dot.healthy { background: var(--success); }
+/* background-attachment: fixed, because the gradient is measured against
+   whatever it is painted on - and that was the content box, whose height is
+   the page's. So a short page (Downloads, Calendar) showed the light corner
+   across most of itself while a tall one (the watchlist) pushed it off the
+   top, and the two read as different greys. Anchored to the viewport, every
+   page shows the same thing. */
+.content { min-width: 0; padding: 44px clamp(24px, 6vw, 92px); background: radial-gradient(circle at top right, var(--surface-3) 0, var(--bg-deep) 36%); background-attachment: fixed; }
+.page-header { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.eyebrow { color: var(--accent-strong); font-size: .78rem; font-weight: 600; text-transform: uppercase; letter-spacing: .12em; margin: 0 0 8px; }
+h1 { margin: 0; font-size: clamp(1.7rem, 3vw, 2.5rem); letter-spacing: -.04em; }.actions { display: flex; gap: 10px; }
+.button { padding: 10px 15px; border-radius: var(--radius-md); border: 1px solid transparent; font-weight: 500; }.button:disabled { cursor: not-allowed; opacity: .65; }.button.primary { color: var(--accent-ink); background: var(--accent); border-color: var(--border); font-weight: 500; }
+.button.primary:hover { background: var(--accent-strong); }.button.secondary { color: var(--text); border-color: #282c34; background: var(--surface-3); font-weight: 500; }
+.button.secondary:hover { background: #404a59; }
+.empty-state { max-width: 550px; margin: 15vh auto; text-align: center; padding: 38px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: rgba(20, 24, 37, .7); }.empty-state h2 { margin: 16px 0 10px; }.empty-state p { color: var(--text-dim); line-height: 1.65; }.empty-icon { display: inline-grid; place-items: center; width: 56px; height: 56px; color: var(--accent-strong); font-size: 1.6rem; border-radius: var(--radius-lg); background: var(--accent-soft); }.phase-note { font-size: .82rem; color: var(--text-mute) !important; }
+/* The column count is a user setting, so it is a custom property rather than
+   an auto-fill guess. minmax(0, 1fr) - not 1fr - or a long title stretches its
+   column and the grid stops being even. */
+.anime-grid { display: grid; grid-template-columns: repeat(var(--per-row, 7), minmax(0, 1fr)); gap: 18px; margin-top: 48px; }
+.anime-grid.tight { margin-top: 20px; }
+/* Below ~900px the chosen count stops fitting; the grid falls back to what the
+   width allows rather than squeezing eight cards onto a phone. */
+@media (max-width: 900px) { .anime-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); } }
+
+/* -- watchlist controls -------------------------------------------------- */
+.watchlist-controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; margin-top: 28px; }
+.size-slider { display: flex; align-items: center; gap: 10px; font-size: .82rem; }
+.size-slider input[type="range"] { width: 132px; accent-color: var(--accent); }
+.size-count { min-width: 1.4em; color: var(--text-dim); font-variant-numeric: tabular-nums; text-align: right; }
+
+/* The Weekly schedule stands apart from the three arrangements (build 208). */
+.sort-splitter { width: 1px; align-self: stretch; min-height: 22px; margin: 0 12px 0 8px; background: var(--border-strong); }
+/* The search box shares the calendar's look; here it is one box, not two. */
+.calendar-filters.watchlist-search { max-width: 300px; }
+/* The search box and the two icon buttons beside it - the adult filter and "My taste" (build 263). */
+.watchlist-find { display: flex; align-items: center; gap: 8px; }
+.button.watchlist-icon { display: grid; place-items: center; width: 38px; height: 38px; padding: 0; }
+.button.watchlist-icon.active { color: var(--accent-strong); border-color: var(--accent-strong); }
+.watchlist-icon-svg { display: block; }
+.watchlist-nomatch { margin: 40px 0; text-align: center; }
+/* Adult switch and taste window, at the bottom of the page (build 208). */
+.watchlist-footer { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 48px; padding-top: 20px; border-top: 1px solid var(--border); }
+
+/* The taste window: genres, most watched first, each with a bar (build 208). */
+.dialog.taste-dialog { width: min(560px, 100%); }
+.taste-list { list-style: none; margin: 14px 0; padding: 0; display: grid; gap: 9px; }
+.taste-row { display: grid; grid-template-columns: minmax(0, 120px) minmax(0, 1fr) 84px; align-items: center; gap: 12px; font-size: .86rem; }
+.taste-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.taste-bar { display: block; height: 10px; border-radius: 5px; background: var(--surface-2); overflow: hidden; }
+.taste-fill { display: block; height: 100%; border-radius: 5px; background: var(--accent); }
+.taste-count { color: var(--text-dim); text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* -- the weekly schedule ------------------------------------------------- */
+/* Seven fixed columns: the week has seven days whatever the card size is, so
+   this grid deliberately ignores --per-row. */
+.week-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 12px; margin-top: 20px; align-items: start; }
+.week-column { display: flex; flex-direction: column; min-width: 0; }
+.week-head {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
+  margin: 0 0 10px; padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-strong);
+  font-size: .82rem; font-weight: 500; letter-spacing: .04em; text-transform: uppercase;
+}
+.week-head .muted { font-size: .78rem; font-variant-numeric: tabular-nums; }
+.week-stack { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+
+/* Today: an accent rule on the header and a wash down the column. Enough to
+   find at a glance, quiet enough not to compete with the covers - the cards
+   are the content, this is just a position marker. */
+.week-column.today .week-head { color: var(--accent-nav); border-bottom-color: var(--accent); }
+.week-column.today {
+  background: linear-gradient(to bottom, var(--accent-soft), transparent 320px);
+  border-radius: var(--radius-md);
+  box-shadow: inset 0 2px 0 var(--accent);
+  padding: 8px 8px 12px;
+  margin: -8px -8px 0;
+}
+.today-chip {
+  margin-left: auto;
+  padding: 1px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--accent);
+  color: var(--accent-nav);
+  font-size: .62rem;
+  font-weight: 500;
+  letter-spacing: .08em;
+}
+/* With the chip present the count would be pushed off the row; it gives up
+   its auto margin instead. */
+.week-column.today .week-head .muted { margin-left: 6px; }
+.week-slot { position: relative; min-width: 0; }
+/* The airing time sits on the cover: in a timetable the time is the label, and
+   putting it below the title would push it under the fold of a small card. */
+.slot-time {
+  position: absolute; z-index: 1; top: 8px; left: 8px;
+  padding: 2px 7px; border-radius: 999px;
+  background: rgba(0, 0, 0, .72); color: #fff;
+  font-size: .7rem; font-weight: 500; font-variant-numeric: tabular-nums;
+  letter-spacing: .02em;
+}
+.week-empty { margin: 0; padding: 14px 0; text-align: center; font-size: .8rem; }
+.week-unscheduled { margin-top: 34px; }
+/* A day is unreadably narrow on a phone, so the week scrolls sideways in its
+   own container rather than the page doing it. */
+@media (max-width: 1000px) {
+  .week-grid { grid-template-columns: repeat(7, minmax(150px, 1fr)); overflow-x: auto; padding-bottom: 8px; }
+}
+.anime-card { display: flex; flex-direction: column; overflow: hidden; padding: 0 0 12px; cursor: pointer; text-align: left; color: inherit; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); transition: transform .15s, border-color .15s; }
+.anime-card:hover { transform: translateY(-3px); border-color: var(--accent); }
+.cover, .cover-placeholder { display: grid; width: 100%; aspect-ratio: 1/1.08; place-items: center; object-fit: cover; object-position: center 38%; color: var(--accent-strong); font-size: 2.4rem; font-weight: 600; background: linear-gradient(150deg, var(--surface-3), var(--surface-2)); }
+.anime-card p { margin: 0 14px; color: var(--text-dim); font-size: .82rem; }
+.anime-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: auto !important; padding-top: 8px; }
+.anime-state { font-weight: 500; }
+.anime-sep { color: var(--text-mute); opacity: .7; margin-right: 5px; }
+/* "Active | TV | 0 / 12": the kind goes first when the card gets small, the size slider's end (build 208). */
+.anime-card { container-type: inline-size; }
+.anime-kind { display: inline-block; }
+@container (max-width: 180px) { .anime-kind { display: none; } }
+/* One line, always (build 210): a narrow card shortens the kind ("Movie" -> "Mov.") before it wraps. */
+.kind-short { display: none; }
+@container (max-width: 235px) { .kind-full { display: none; } .kind-short { display: inline; } }
+.anime-card > .anime-meta { flex-wrap: nowrap; white-space: nowrap; overflow: hidden; }
+.watchlist-count { flex: 1 0 100%; margin: 0 0 4px; text-align: center; font-size: .82rem; }
+.anime-progress { display: inline-block; }
+/* State at a glance: active is the healthy case, the rest are quieter. */
+.state-active { color: var(--success); }
+.state-upcoming { color: var(--warning); }
+.state-complete { color: var(--accent); }
+.state-waiting { color: var(--warning); }
+.state-dropped, .state-archived { color: var(--text-mute); }
+.dialog-backdrop { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; padding: 18px; background: rgba(2, 3, 8, .7); backdrop-filter: blur(4px); overflow: auto; overscroll-behavior: contain; }.dialog { width: min(620px, 100%); padding: 24px; border: 1px solid var(--border-strong); border-radius: var(--radius-lg); background: var(--surface-2); box-shadow: 0 24px 80px rgba(0,0,0,.5); }.dialog header { display: flex; justify-content: space-between; align-items: center; }.dialog h2 { margin: 0; }.close { font-size: 1.6rem; }.search-row { display: flex; gap: 10px; margin: 22px 0 14px; }.search-row input, .dialog label input { min-width: 0; width: 100%; padding: 10px 12px; color: var(--text); border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--field); }.search-results { display: grid; align-content: start; height: 312px; overflow-y: auto; overscroll-behavior: contain; padding: 0 10px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); }.search-results > p { margin: 12px 4px; font-size: .86rem; }.search-result { display: grid; width: 100%; gap: 4px; padding: 12px 4px; cursor: pointer; text-align: left; color: var(--text); border: 0; border-bottom: 1px solid var(--border); background: transparent; }.search-result:hover { color: var(--accent-strong); }.search-result small, .selected-anime small { color: var(--text-mute); }.search-result-meta { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }.in-library-tag { color: var(--success-text, var(--success-border)); font-weight: 600; white-space: nowrap; }.selected-anime { display: grid; gap: 4px; margin: 14px 0 14px; padding: 12px 14px; border-radius: var(--radius-md); background: var(--surface-3); }.dialog label { display: grid; gap: 7px; color: var(--text-dim); font-size: .85rem; }.dialog-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }.error-message { margin: 10px 0; color: var(--danger) !important; font-size: .85rem; }
+.calendar { margin-top: 34px; }.calendar-controls { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }.calendar-tools { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }.calendar-tools .check { display: flex; align-items: center; gap: 8px; color: var(--text-dim); font-size: .82rem; }.calendar-tools .check input { accent-color: var(--accent-strong); }.calendar-card strong { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.calendar-card { transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease; }
+.calendar-card:hover { transform: translateY(-3px); border-color: var(--accent); box-shadow: 0 6px 18px rgba(0, 0, 0, .35); }
+.calendar-card.in-library { opacity: .75; }
+.calendar-season-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.calendar-season { font-size: 1.5rem; font-weight: 600; letter-spacing: -.02em; }
+.toggle-btn { padding: 8px 14px; border-radius: var(--radius-md); border: 1px solid var(--border-strong); color: var(--text); background: var(--surface-3); cursor: pointer; font-size: .82rem; font-weight: 600; transition: background-color .15s ease, color .15s ease, transform .12s ease; }
+.toggle-btn:hover:not(:disabled) { transform: translateY(-1px); }
+.toggle-btn.on { background: var(--accent-strong); color: var(--surface-2); border-color: var(--accent-strong); }
+.toggle-btn:disabled { opacity: .55; cursor: not-allowed; }
+.calendar-card { transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease; }
+.calendar-card:hover { transform: translateY(-3px); border-color: var(--accent); box-shadow: 0 6px 18px rgba(0, 0, 0, .35); }
+.calendar-card.in-library { opacity: .75; }
+.genre-line { color: var(--accent-strong) !important; font-size: .72rem; letter-spacing: .02em; }
+/* --- Activity (0.0.58) --------------------------------------------------- */
+/* Three columns: the level chip, the message (which may expand), the time and
+   its details toggle. */
+.activity-row { align-items: start; }
+/* Capped to one line (build 127), where it used to be allowed to wrap:
+   *"lets make the title line also just one line, if the title is to long cap
+   it."*  The whole text is in the details, so nothing is lost. */
+.activity-row .release-main > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.activity-row .release-main .parsed-grid { overflow: visible; white-space: normal; }
+/* One colour code for every tag on both pages (build 127). Five
+   severities, decided in one place - see severity.ts, which explains what
+   each one means and why a self-healing problem is yellow rather than red.
+
+   `white-space: nowrap` is the other half of the report: *"The download
+   missing tag for example is 2 lines."*  A tag is a label, and a label that
+   wraps stops being one - so it never wraps, and the names were shortened
+   until they did not need to. */
+.chip.sev-error { color: var(--danger); background: rgba(124, 61, 74, .25); border: 1px solid var(--danger-border); }
+.chip.sev-warning { color: var(--warning); background: rgba(217, 168, 79, .15); border: 1px solid var(--warning-border); }
+.chip.sev-info { color: var(--accent-strong); background: rgba(94, 158, 255, .15); border: 1px solid var(--accent); }
+.chip.sev-success { color: var(--success); background: rgba(74, 154, 110, .18); border: 1px solid var(--success-border); }
+.chip.sev-notice { color: var(--text-dim); background: rgba(90, 100, 120, .18); border: 1px solid var(--border-strong); }
+.chip { white-space: nowrap; }
+.chip.level-routine { color: var(--text-dim); background: rgba(90, 100, 120, .18); border: 1px solid var(--border-strong); }
+.chip.level-notable { color: var(--success); background: rgba(74, 154, 110, .18); border: 1px solid var(--success-border); }
+.chip.level-problem { color: var(--danger); background: rgba(124, 61, 74, .25); border: 1px solid var(--danger-border); }
+.activity-row.level-problem { border-color: var(--danger-border); }
+
+/* --- Detail page (0.0.58) ------------------------------------------------- */
+/* Configuration and Lifecycle stack in the right column; the episode list runs
+   the full height beside them. */
+.detail-side { display: grid; align-content: start; gap: 20px; }
+/* A checkbox that reads as a control rather than as a stray tick: it stays on
+   screen when the download buttons are gone. */
+.toggle-check { display: inline-flex; align-items: center; gap: 8px; padding: 7px 13px; color: var(--text); font-size: .82rem; font-weight: 500; border: 1px solid var(--border-strong); border-radius: var(--radius-md); background: var(--surface-3); cursor: pointer; white-space: nowrap; }
+.toggle-check input { margin: 0; accent-color: var(--accent-strong); }
+.toggle-check.on { color: var(--success); border-color: var(--success-border); background: var(--success-bg); }
+
+/* --- Season calendar (0.0.57) -------------------------------------------- */
+/* Three columns so the middle one is centred on the page regardless of how
+   wide the two step buttons are. */
+.calendar-controls { display: grid; grid-template-columns: 1fr auto 1fr; align-items: start; gap: 12px; margin-bottom: 22px; }
+.calendar-controls > .button:first-child { justify-self: start; }
+.calendar-controls > .button:last-child { justify-self: end; }
+/* The button, then the season it names. A generous gap: they are two
+   different things - a control and a heading - and at 14px they read as one
+   stacked lump. The whole row sits lower for the same reason. */
+.calendar-now { display: grid; justify-items: center; gap: 22px; text-align: center; padding-top: 6px; }
+.calendar-now .calendar-season { font-size: 1.15rem; letter-spacing: .06em; text-transform: uppercase; color: var(--text); }
+/* Filters sit outside the season block: library on the left, content on the right. */
+.calendar-tools { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 18px 0 16px; }
+.calendar-tools .check { display: flex; align-items: center; gap: 10px; margin: 0; color: var(--text-dim); font-size: .82rem; cursor: pointer; }
+.calendar-tools .check input { flex: 0 0 auto; margin: 0; accent-color: var(--accent-strong); }
+.adult-tag { color: var(--danger); font-size: .72rem; font-weight: 600; letter-spacing: .04em; }
+/* Where a show is, when that is not what the season implies (build 148).
+   Three colours for four states, on the same logic the episode rows use: the
+   thing you can watch now is the good one, an abandoned show is the bad one,
+   and "has not started" is neutral because it is not a problem. */
+/* The update window's own row: the button, and the note that belongs to it
+   (build 149). Centred on each other rather than stacked, and given room
+   above so the button is not against the line that says what is happening. */
+.calendar-update .update-actions { align-items: center; gap: 12px; margin-top: 18px; margin-bottom: 0; }
+/* The poster is artwork: show all of it. Giving it the posters' own 2:3 shape
+   makes the card as tall as the image needs instead of cropping the image to
+   the height of the text beside it. */
+.calendar-poster { display: block; width: 100%; padding: 0; border: 0; background: transparent; cursor: zoom-in; }
+/* Fill the column: cover crops a few percent off a poster that is not exactly
+   2:3, which reads far better than letterboxing it. */
+.calendar-poster .cover, .calendar-poster .cover-placeholder { width: 100%; height: 100%; min-height: 0; object-fit: cover; border-radius: 0; }
+.calendar-card { grid-template-columns: 132px 1fr; align-items: stretch; }
+.calendar-poster { height: 100%; }
+.calendar-card > div { align-content: start; }
+/* A window that keeps its size while the image adapts to it, so opening one
+   poster after another does not make the dialog jump around. */
+.poster-dialog { width: min(900px, 94vw); }
+/* The configuration window holds four panels and long paths. */
+.dialog.dialog-config { width: min(1040px, 96vw); }
+.poster-dialog h2 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 1.05rem; }
+.poster-stage { display: grid; place-items: center; height: min(78vh, 900px); margin-top: 14px; overflow: hidden; border-radius: var(--radius-md); background: var(--bg); }
+.poster-stage img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.poster-stage .cover-placeholder { width: 160px; height: 160px; font-size: 3rem; }
+.calendar-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 13px; }.calendar-card { display: grid; grid-template-columns: 84px 1fr; overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); }.calendar-card .cover, .calendar-card .cover-placeholder { min-height: 116px; font-size: 1.4rem; }.calendar-card > div { display: grid; align-content: center; gap: 8px; padding: 12px; }.calendar-card strong { font-size: .92rem; }.calendar-card small, .muted, .loading { color: var(--text-mute); }.calendar-card .button { justify-self: start; padding: 6px 9px; font-size: .8rem; }.detail { max-width: min(1500px, 100%); }.back-link { margin-bottom: 24px; padding: 0; cursor: pointer; color: var(--accent-strong); border: 0; background: transparent; }.detail-hero { display: grid; grid-template-columns: 170px 1fr; gap: 24px; align-items: end; padding-bottom: 26px; border-bottom: 1px solid var(--border); }.detail-hero .cover, .detail-hero .cover-placeholder { border-radius: var(--radius-md); }.detail-hero h1 { margin: 0 0 10px; }.detail-hero p { margin: 7px 0; }.detail-layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 20px; margin-top: 22px; }.detail-panel { padding: 20px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); }.detail-panel h2 { margin-top: 0; font-size: 1.05rem; }.episode-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(66px, 1fr)); gap: 9px; }.episode { display: grid; gap: 3px; min-height: 62px; padding: 10px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); }.episode small { color: var(--text-dim); font-size: .72rem; }.episode.imported { border-color: var(--success-border); }.episode.attention { border-color: var(--warning-border); }.episode-list { display: grid; gap: 10px; }/* Three columns: the episode number, the details, and the action. The
+   action column is sized to its own content so a longer label (English
+   "Download this episode" vs German "Diese Episode laden") widens the
+   button instead of being clipped by it. Rows without a button simply
+   collapse the third column to zero. */
+/* The number, the details, and the action. Build 90 gave the media
+   server's verdict a fourth column, which centred it against the release
+   name and cut it short; it now shares the "In library" line instead. */
+.episode-row { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 12px 14px; border: 1px solid var(--border-strong); border-radius: var(--radius-md); background: var(--surface-2); min-height: 68px; }.episode-row.missing { border-color: var(--border-strong); }.episode-row.imported { border-color: var(--success-border); }.episode-row.available { border-color: var(--warning-border); }.episode-row-left { display: grid; gap: 2px; justify-items: center; }.episode-row-left strong { font-size: 1.05rem; }.episode-row-left strong.n3 { font-size: .9rem; }.episode-row-left strong.n4 { font-size: .74rem; }.episode-row-left strong.episode-number { white-space: nowrap; }.episode-row-left small { font-size: .72rem; color: var(--text-dim); }.episode-row-main { display: grid; gap: 3px; min-width: 0; }.episode-filename { font-size: .82rem; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.storage-paths { display: grid; grid-template-columns: 13ch max-content max-content 1fr; gap: 10px; margin-bottom: 14px; }.storage-path { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; gap: 4px 14px; align-items: baseline; padding: 10px 12px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm, 6px); background: var(--surface-2); }.storage-path-name { font-size: .82rem; color: var(--text-dim); }.storage-path-host { font-family: var(--mono, ui-monospace, monospace); font-size: .8rem; color: var(--text); overflow-wrap: anywhere; }.storage-path small { grid-row: 1; grid-column: 3; font-size: .72rem; }.storage-path .imported-tag, .storage-path .reasons { grid-row: 1; grid-column: 4; justify-self: end; white-space: nowrap; font-size: .72rem; }.episode-second-name { font-size: .72rem; color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.episode-magnet { color: var(--success); font-size: .72rem; }
+/* "In library" on the left, the media server's verdict on the right of the
+   same line. It wraps rather than squeezing the label on a narrow screen. */
+.episode-owned-line { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 14px; }
+/* The release date on the right of the status line (build 216): blue, so it reads as a fact about the
+   episode rather than about AniFlow's work on it; an estimate is dimmer and italic. */
+.episode-airing { margin-left: auto; font-size: .82rem; white-space: nowrap; color: var(--accent, #4aa3ff); }
+.episode-airing.estimated { font-style: italic; opacity: .8; }
+.episode-verdict { font-size: .72rem; white-space: nowrap; }
+.episode-verdict.ok { color: var(--success); }
+.episode-verdict.warn { color: var(--warning); }.episode-hint { color: var(--warning); font-size: .72rem; }.action-stack { display: grid; gap: 8px; margin-bottom: 28px; }
+.lifecycle-current { display: grid; gap: 4px; margin-bottom: 14px; }
+.lifecycle-current strong { font-size: 1.05rem; }
+.lifecycle-dialog { width: min(420px, 100%); }
+.lifecycle-options { margin: 18px 0 0; }
+.lifecycle-option.current { cursor: default; }
+.episode-view-button { padding: 8px 16px; font-size: .82rem; white-space: nowrap; }
+.dialog.episode-files-dialog { width: min(1100px, 100%); }
+.episode-files-hint { margin: 8px 0 18px; }
+.episode-files-list { display: grid; gap: 14px; align-content: start; }
+.episode-files-item { padding: 12px 14px; border: 1px solid var(--border-strong); border-radius: var(--radius-md); background: var(--surface-2); }
+.episode-files-head { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; align-items: baseline; margin-bottom: 8px; }
+.episode-files-number { font-size: 1rem; }
+.episode-files-title { font-weight: 600; overflow-wrap: anywhere; }
+.episode-files-none { margin: 0; }
+.file-row { display: grid; grid-template-columns: 150px minmax(0, 1fr) 92px; gap: 10px; align-items: start; padding: 6px 0; border-top: 1px solid var(--border); }
+.file-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.file-tag { padding: 2px 7px; border: 1px solid var(--border-strong); border-radius: 4px; font-size: .68rem; font-weight: 600; text-transform: uppercase; letter-spacing: .03em; color: var(--text-dim); background: var(--surface-3); }
+.file-tag.target { color: var(--success); border-color: var(--success-border); }
+.file-tag.source { color: var(--text-mute); }
+.file-tag.backup { color: var(--text-dim); }
+.file-tag.original, .file-tag.previous { color: var(--warning); border-color: var(--warning-border); }
+.file-tag.lower, .file-tag.alternative { color: var(--accent-strong); }
+.file-tag.waiting { color: var(--warning); }
+.file-name { font-size: .82rem; overflow-wrap: anywhere; }
+.file-delete { padding: 4px 8px; font-size: .74rem; white-space: nowrap; }
+.file-delete-space { display: block; }
+.keep-warning { margin: 0 0 12px; padding: 10px 12px; border: 1px solid var(--danger-border); border-radius: var(--radius-md); color: var(--danger); background: var(--danger-bg); font-size: .85rem; }
+.episode-row.duplicate { border-color: var(--danger-border); background: var(--danger-bg); }
+/* A row instead of a column. It used to exist only under three specific
+   parents, so everywhere else the class was inert and the buttons stacked -
+   reported as *"test all subs ... should be next to it and not below"*.
+   The scoped rules below keep only the margins they set, which belong to
+   those layouts rather than to the modifier. */
+.action-stack.horizontal { display: flex; flex-wrap: wrap; gap: 8px; }
+/* In a header row the column's bottom margin would make the row taller for
+   no reason. */
+.status-line .action-stack.horizontal { margin-bottom: 0; }.danger { color: var(--danger); border-color: var(--danger-border); background: var(--danger-bg); font-weight: 500; }
+.danger:hover { color: var(--accent-ink); background: var(--danger); }
+@media (max-width: 700px) { .app-shell { grid-template-columns: 1fr; }.sidebar { position: static; height: auto; gap: 16px; padding: 15px; border-right: 0; border-bottom: 1px solid var(--border); }.sidebar nav { display: flex; overflow-x: auto; }.nav-item { white-space: nowrap; }.health { margin-top: 0; padding: 4px 2px; font-size: .74rem; }.content { padding: 28px 20px; }.page-header { align-items: flex-start; flex-direction: column; }.empty-state { margin: 10vh auto; } }
+
+.profile-panel { grid-column: 1 / -1; }
+.profile-form { display: grid; gap: 14px; margin-top: 14px; }
+.field { display: grid; gap: 6px; color: var(--text-dim); font-size: .85rem; }
+.field input, .field select { min-width: 0; width: 100%; height: 38px; padding: 9px 11px; color: var(--text); border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--field); }.field textarea { min-height: 38px; }
+/* A read-only field must look it, or the user tries to type into it. */
+.field input[readonly] { color: var(--text-dim); border-style: dashed; background: var(--bg); cursor: default; }
+.advanced { border: 1px solid var(--border); border-radius: var(--radius-md); padding: 10px 12px; }
+.advanced summary { cursor: pointer; color: var(--accent-strong); font-size: .85rem; }
+.advanced .check { display: flex; align-items: center; gap: 9px; margin-top: 10px; color: var(--text-dim); font-size: .82rem; }
+.advanced .check input { accent-color: var(--accent-strong); }
+/* Checkbox rows always read as "[x] Label" on one line. Stated explicitly
+   (and specifically enough to win) because ".dialog label { display: grid }"
+   plus ".dialog label input { width: 100% }" would otherwise stack a
+   full-width box above the text. */
+.check,
+.dialog label.check { display: flex; align-items: center; gap: 9px; color: var(--text-dim); font-size: .82rem; }
+.check > input[type="checkbox"],
+.dialog label.check > input[type="checkbox"] { flex: 0 0 auto; width: auto; min-width: 0; margin: 0; padding: 0; accent-color: var(--accent-strong); }
+.profile-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 14px; }
+.profile-test { display: grid; gap: 12px; margin-top: 26px; padding-top: 18px; border-top: 1px solid var(--border); }
+.profile-test h3 { margin: 0; font-size: .95rem; }
+.test-outcome { display: grid; gap: 12px; padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--border-strong); background: var(--surface-2); }
+.test-outcome.pass { border-color: var(--success-border); }
+.test-outcome.fail { border-color: var(--danger-border); }
+.test-outcome > strong { color: var(--success); }
+.test-outcome.fail > strong { color: var(--danger); }
+.parsed-grid { display: grid; grid-template-columns: max-content 1fr; gap: 5px 16px; margin: 0; font-size: .84rem; }
+.parsed-grid dt { color: var(--text-mute); }
+.parsed-grid dd { margin: 0; color: var(--text); word-break: break-word; }
+.verdict-list { display: grid; gap: 5px; margin: 0; padding: 0; list-style: none; font-size: .82rem; }
+.verdict::before { content: "●"; margin-right: 7px; }
+.verdict.pass { color: var(--success); }
+.verdict.fail { color: var(--danger); }
+.verdict.fail-unknown { color: var(--warning); }
+
+.downloads { display: grid; gap: 20px; margin-top: 34px; }
+.rss-status .status-line { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.rss-status .status-line strong { margin-right: auto; }
+.detail-panel h2 { margin-bottom: 14px; }
+.source-add { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) auto; gap: 10px; margin-bottom: 16px; }
+.source-add input { min-width: 0; padding: 9px 11px; color: var(--text); border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--field); }
+.source-list, .release-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.source-row { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface-2); }
+.source-row > div { display: grid; gap: 2px; min-width: 0; }
+.source-row small { color: var(--text-mute); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.source-row .button { padding: 6px 10px; font-size: .78rem; }
+.release-row { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; padding: 9px 12px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface-2); }
+.release-main { display: grid; gap: 2px; min-width: 0; }
+.release-main strong { font-size: .88rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.release-main small.reasons { color: var(--warning); }
+.chip { justify-self: start; padding: 3px 9px; border-radius: 999px; font-size: .72rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+.chip.matched { color: var(--success); background: rgba(74, 154, 110, .18); border: 1px solid var(--success-border); }
+.chip.rejected { color: var(--danger); background: rgba(124, 61, 74, .25); border: 1px solid var(--danger-border); }
+.chip.ignored { color: var(--text-dim); background: rgba(90, 100, 120, .18); border: 1px solid var(--border-strong); }
+.chip.ambiguous { color: var(--warning); background: rgba(217, 168, 79, .15); border: 1px solid var(--warning-border); }
+
+/* 0.0.55 - Clear button and the discovery debug view.
+   The Clear button is red while a download is unfinished and turns green at
+   100%, which is the at-a-glance proof that AniFlow saw qBittorrent finish. */
+.success { color: var(--success); border-color: var(--success-border); background: var(--success-bg); }
+.filter-row { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+.filter-note { font-size: .82rem; }
+.filter-row .button { padding: 6px 11px; font-size: .78rem; }
+/* Untracked titles are the bulk of a season feed: name plus reason, one line. */
+.release-row.compact { padding: 5px 12px; gap: 10px; }
+.release-row.compact .release-name { font-size: .82rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.release-row.compact small { justify-self: end; font-size: .74rem; white-space: nowrap; }
+@media (max-width: 700px) { .source-add { grid-template-columns: 1fr; }.source-row { grid-template-columns: 1fr; } }
+
+.detail-panel .status-line h2 { margin: 0; }
+.release-main progress { width: 100%; max-width: 320px; height: 8px; accent-color: var(--accent-strong); }
+.chip.queued { color: var(--accent-strong); background: rgba(185, 176, 255, .14); border: 1px solid var(--accent); }
+.chip.downloading { color: var(--accent-strong); background: rgba(94, 158, 255, .15); border: 1px solid var(--accent); }
+.chip.completed { color: var(--success); background: rgba(74, 154, 110, .18); border: 1px solid var(--success-border); }
+.chip.skipped { color: var(--text-dim); background: rgba(90, 100, 120, .18); border: 1px solid var(--border-strong); }
+.chip.attention { color: var(--warning); background: rgba(217, 168, 79, .15); border: 1px solid var(--warning-border); }
+.chip.failed { color: var(--danger); background: rgba(124, 61, 74, .25); border: 1px solid var(--danger-border); }
+.chip.removed { color: var(--text-dim); background: rgba(90, 100, 120, .12); border: 1px dashed var(--border-strong); }
+.imported-tag { color: var(--success); font-size: .78rem; }
+
+.profiles-page { display: grid; gap: 18px; margin-top: 34px; }
+/* Template and feed-source cards. Columns are capped rather than stretching
+   with 1fr, so a card is only as wide as its content needs instead of being
+   padded out with empty space. Own class (not .anime-grid) so the watchlist
+   grid and this one can be tuned independently. */
+.profiles-page .template-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(270px, 100%), 340px)); gap: 18px; margin-top: 24px; justify-content: start; }
+.template-card { display: grid; gap: 6px; padding: 16px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); min-width: 0; }
+.template-card:hover { border-color: var(--accent); }
+.template-card strong { font-size: .98rem; }
+.template-card small { color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.template-card .action-stack.horizontal { margin-top: 10px; }
+.template-card .button { padding: 5px 10px; font-size: .78rem; white-space: nowrap; }
+.default-badge { margin-left: 8px; padding: 2px 8px; border-radius: 999px; background: var(--accent)33; color: var(--accent-strong); font-size: .68rem; font-weight: 600; vertical-align: middle; }
+.calendar-card.in-library { opacity: .75; }
+
+.activity-page { display: grid; gap: 20px; margin-top: 34px; }
+/* A gap under the "Dismiss all" row (build 128): *"Add a bit space
+   between Dismiss all button and the first bubble below."* */
+.attention-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; margin-top: 12px; }
+
+/* Rows inside a panel are inset (var(--surface-2)) everywhere - Activity used the
+   panel's own colour, which made it look like a different page. */
+/* The same grid the Activity rows use (build 127): tag, then the two-line
+   main column, then the time and the button. Reported as *"If you look at the
+   look of the activity, its way cleaner ... but looking at the attention
+   window its different."*  It is the same shape now, so it reads the same.
+
+   Before 126 this was `1fr auto`, which put the expanded details in a
+   content-sized gutter; before 127 it was one column, which left the tag
+   above the title instead of beside it. Three columns and a body that spans
+   all of them is what both reports were asking for. */
+.attention-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 9px 12px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface-2); }
+.attention-row > .attention-body { grid-column: 1 / -1; }
+/* Two lines, each one line (build 127): *"top line for title which is capped
+   and bottom line for the 2nd line which is also capped."* */
+.attention-main { display: grid; gap: 2px; min-width: 0; }
+.attention-main > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.attention-aside { display: grid; gap: 6px; justify-items: end; }
+/* The border says severity, so a row reads as a problem or not before any
+   text is read. Quiet by default; only the two that matter are coloured. */
+.attention-row.sev-error { border-color: var(--danger-border); }
+.attention-row.sev-warning { border-color: var(--warning-border); }
+.attention-row .action-stack.horizontal { margin: 0; }
+.attention-row .button { padding: 6px 10px; font-size: .78rem; }
+.chip.kind-new_version { color: var(--warning); background: rgba(217, 168, 79, .15); border: 1px solid var(--warning-border); }
+.chip.kind-ambiguous_release { color: var(--accent-strong); background: rgba(185, 176, 255, .14); border: 1px solid var(--accent); }
+.chip.kind-import_blocked { color: var(--danger); background: rgba(124, 61, 74, .25); border: 1px solid var(--danger-border); }
+.chip.kind-download_missing { color: var(--accent-strong); background: rgba(94, 158, 255, .15); border: 1px solid var(--accent); }
+.chip.kind-feed_failed { color: var(--text-dim); background: rgba(90, 100, 120, .18); border: 1px solid var(--border-strong); }
+
+
+.settings-page { display: grid; gap: 20px; margin-top: 34px; }
+.settings-page h3 { margin: 18px 0 10px; font-size: .92rem; color: var(--accent-strong); }
+/* Tabs, not buttons: six primary buttons in a row would compete with Save,
+   which is the only button on the page that does anything irreversible. The
+   selected one is marked by the rule underneath it. */
+.settings-tabs { display: flex; flex-wrap: wrap; gap: 2px; border-bottom: 1px solid var(--border); }
+/* The line that says whether the page is saved (build 261): always there, so it does not push the tabs about. */
+.settings-status { min-height: 1.6em; margin: 0 0 6px; font-size: .8rem; color: var(--text-mute); text-align: right; }
+.settings-status.saving, .settings-status.pending { color: var(--text-dim); }
+.settings-status.saved { color: var(--success); }
+.settings-status.held { color: var(--warning); }
+.settings-status.error { color: var(--danger); }
+.settings-tab { padding: 10px 15px; margin-bottom: -1px; font: inherit; font-size: .9rem; color: var(--text-mute); cursor: pointer; background: transparent; border: 0; border-bottom: 2px solid transparent; border-radius: var(--radius-sm) var(--radius-sm) 0 0; }
+.settings-tab:hover { color: var(--text); background: var(--surface); }
+.settings-tab.active { color: var(--accent-strong); border-bottom-color: var(--accent-strong); }
+.settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; align-items: start; }
+.settings-grid.two { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.status-line { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+
+.dialog { display: flex; flex-direction: column; max-height: calc(100vh - 36px); overflow-y: auto; overscroll-behavior: contain; }
+/* The feed check lists whole release names, which do not fit in a 620px
+   dialog - and the class asking for a wider one had no rule behind it at all
+   until build 94, so it had always been the default width. */
+.dialog.dialog-wide { width: min(1100px, 100%); }
+/* The selected row's own scan: a bar while it runs, the episodes when it is
+   done. Third row of the row's grid, so it never pushes the name or the
+   folder around while it appears and disappears. */
+/* Row two holds the folder name *and* what was found for it (124). */
+.setup-row-second { grid-column: 1; grid-row: 2; display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; min-width: 0; }
+.setup-row-second > small { grid-column: auto; grid-row: auto; }
+.setup-row-scan { display: flex; align-items: center; gap: 8px; min-height: 16px; flex: 1 1 auto; min-width: 0; }
+.setup-row-scan progress { flex: 1 1 auto; height: 6px; }
+.setup-row-episodes { color: var(--success-text, var(--text-dim)); }
+/* The file list in the More info window. A release name is long and must not
+   widen the dialog, so the table scrolls inside its own box. */
+.scan-table-wrap { max-height: 46vh; overflow: auto; overscroll-behavior: contain; }
+.scan-table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+.scan-table th { text-align: left; font-weight: 600; color: var(--text-dim); padding: 4px 8px; position: sticky; top: 0; background: var(--surface-2); }
+.scan-table td { padding: 4px 8px; border-top: 1px solid var(--border); vertical-align: top; }
+.scan-table td.numeric, .scan-table th.numeric { text-align: right; white-space: nowrap; }
+.scan-table code { overflow-wrap: anywhere; font-size: .78rem; }
+.modal-scroll { overflow-y: auto; min-height: 0; padding-right: 4px; }
+
+/* The Schedule page (build 158): a flat Sonarr/Radarr-style task list.
+   `.schedule-page` itself never got the `margin-top: 34px` every other
+   top-level page has (`.activity-page`, `.settings-page`, `.profiles-page`,
+   `.downloads`...) - missed since build 158, reported at build 162 as the
+   page reading inconsistent with the rest of the app once compared side by
+   side. */
+.schedule-page { display: grid; gap: 20px; margin-top: 34px; }
+.schedule-table-wrap { overflow-x: auto; }
+.schedule-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+.schedule-table th { text-align: left; font-weight: 600; color: var(--text-dim); padding: 8px; border-bottom: 1px solid var(--border-strong); }
+.schedule-table td { padding: 10px 8px; border-top: 1px solid var(--border); vertical-align: middle; }
+.schedule-table th:nth-child(n+2), .schedule-table td:nth-child(n+2) { white-space: nowrap; }
+/* build 163: the flex layout that used to live on the <td> itself moved to
+   an inner span - see the comment beside `.schedule-run-cell-inner` below,
+   the "black line" this caused was the same bug in both places. */
+.schedule-name { display: flex; align-items: center; gap: 8px; white-space: normal; }
+.schedule-row:hover td { background: var(--surface-2); }
+.schedule-row.disabled { color: var(--text-mute); }
+.schedule-row.disabled .schedule-name .health-dot { opacity: .5; }
+/* Two fixed slots, not a packed flex row (build 162): with the gear button
+   only sometimes present, packing left the Run button jumping sideways
+   depending on whether its neighbour existed - reported as rows whose icons
+   "are not in the same row" and read, at a glance down the column, as a
+   layout glitch. A slot is always 30px wide whether or not it holds a
+   button, so Gear's own column and Run's own column each stay put.
+   `display: flex` sits on `.schedule-run-cell-inner`, not the <td> itself
+   (build 163) - a table cell given `display: flex` directly stops sharing
+   the row's height with its siblings (confirmed live: forcing every cell in
+   a row back to `display: table-cell` made all five agree on one height,
+   64px, where the flexed one had shrunk to 51px on its own). Reported as a
+   stray dark line above a row whose name had wrapped to two lines - the
+   short cell's own border sat partway up the row the other cells still
+   filled completely. */
+.schedule-run-cell-inner { display: flex; gap: 6px; justify-content: flex-end; }
+.schedule-icon-slot { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; flex: 0 0 30px; }
+.schedule-run, .schedule-gear { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; padding: 0; }
+.schedule-run-icon.spinning { animation: schedule-spin 1s linear infinite; }
+@keyframes schedule-spin { to { transform: rotate(360deg); } }
+
+/* The per-task editor (build 161): auto/manual, and the interval itself as
+   a number plus a unit, opened from the gear button beside Run. */
+.schedule-edit-mode { display: flex; gap: 18px; margin: 4px 0 14px; }
+.schedule-edit-interval-row { display: flex; gap: 8px; align-items: center; }
+.schedule-edit-interval-row input[type="number"] {
+  width: 5.5em; padding: 5px 8px; text-align: right; color: var(--text);
+  border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--field);
+}
+.schedule-edit-interval-row select {
+  padding: 5px 8px; color: var(--text);
+  border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--field);
+}
+/* Breathing room above Save/Reset/Close (build 162) - they sat right against
+   the interval row otherwise. */
+.schedule-edit .action-stack.horizontal { margin-top: 18px; }
+
+/* The matching Settings controls, under General -> Automation intervals. */
+.schedule-settings-group { margin-top: 18px; }
+.schedule-settings-group h3 { margin: 0 0 8px; font-size: .88rem; color: var(--text-dim); }
+.schedule-settings-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-top: 1px solid var(--border); }
+.schedule-settings-row .check { flex: 1 1 auto; min-width: 0; }
+.schedule-interval-input { width: 5.5em; padding: 5px 8px; text-align: right; color: var(--text); border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--field); }
+
+/* Label/value pairs in an information window. Two columns on anything wider
+   than a phone, stacked below that - a definition list already reads correctly
+   when the grid is dropped. */
+.info-grid { display: grid; grid-template-columns: minmax(140px, max-content) 1fr; gap: 8px 18px; margin: 12px 0 0; }
+.info-grid dt { color: var(--text-mute); font-size: .82rem; }
+.info-grid dd { margin: 0; color: var(--text); font-size: .88rem; }
+@media (max-width: 560px) { .info-grid { grid-template-columns: 1fr; gap: 2px; } .info-grid dd { margin-bottom: 8px; } }
+.library-debug { grid-column: 1 / -1; }
+.library-debug dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; margin: 12px 0 0; }
+.library-debug dt { color: var(--text-mute); font-size: .82rem; }
+.library-debug dd { margin: 0; overflow-wrap: anywhere; font-size: .85rem; }
+
+.search-bar-wrapper { position: relative; }
+.search-bar { display: flex; gap: 8px; align-items: center; }
+.search-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 4px;
+  padding: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  list-style: none;
+  z-index: 10;
+  max-height: 240px;
+  overflow-y: auto;
+}
+.search-dropdown li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.search-dropdown li:last-child { border-bottom: none; }
+.search-dropdown li:hover { background: var(--surface-2); }
+.search-dropdown strong { color: var(--text); }
+.search-dropdown .muted { color: var(--text-mute); font-size: .75rem; }
+.search-dropdown .id-hint { color: var(--accent); font-size: .65rem; font-family: monospace; }
+.results-summary { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+.search-results { margin-top: 16px; }
+.results-table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+.results-table th, .results-table td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--border); }
+.results-table th { color: var(--accent-strong); font-weight: 600; }
+.results-table td strong { color: var(--text); }
+.results-table td small { color: var(--text-mute); }
+.results-table tr:hover td { background: var(--surface-3); }
+
+.debug-panel {
+  margin-top: 16px;
+  padding: 12px;
+  background: var(--field);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.debug-panel summary {
+  cursor: pointer;
+  color: var(--accent-strong);
+  font-size: .85rem;
+  font-weight: 600;
+}
+.debug-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 12px;
+  margin-top: 8px;
+  font-size: .8rem;
+}
+.debug-grid dt { color: var(--text-mute); }
+.debug-grid dd { margin: 0; color: var(--text); font-family: monospace; font-size: .75rem; }
+
+/* -- the Configuration window ------------------------------------------- */
+/* A warning the user can still act on: the folder change has not been saved
+   yet. Amber rather than red - nothing is wrong, something is about to be. */
+.warning-message {
+  margin: 12px 0;
+  padding: 10px 12px;
+  border: 1px solid var(--warning-border);
+  border-left: 3px solid var(--warning);
+  border-radius: var(--radius-sm);
+  background: rgba(249, 200, 81, .08);
+  color: var(--warning);
+  font-size: .84rem;
+}
+.cover-editor { display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-start; margin-top: 6px; }
+.cover-preview { flex: 0 0 auto; width: 132px; border-radius: var(--radius-md); overflow: hidden; }
+.cover-editor > div:last-child { flex: 1 1 260px; min-width: 0; }
+.db-dump {
+  font-size: .75rem; color: var(--text-dim); white-space: pre-wrap; word-break: break-all;
+  max-height: 40vh; overflow: auto; margin: 10px 0 0;
+  padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--field);
+}
+
+/* A caution inside a field, under the input it belongs to. */
+.warning-inline { display: block; margin-top: 4px; color: var(--warning); font-size: .78rem; }
+
+/* -- indexer profiles ---------------------------------------------------- */
+/* A URL carrying query parameters has no natural break points, so it gets an
+   explicit one rather than widening the card. */
+/* Cards truncate their small print by default; a URL is the one thing here
+   that has to be readable in full, so it wraps instead. */
+.template-card .indexer-url,
+.indexer-url { font-family: ui-monospace, Consolas, monospace; font-size: .74rem; color: var(--text-dim);
+  overflow-wrap: anywhere; white-space: normal; overflow: visible; text-overflow: clip; }
+.indexer-suggestion {
+  display: grid; gap: 6px; justify-items: start;
+  margin-top: 8px; padding: 8px 10px;
+  border: 1px solid var(--warning-border); border-left: 3px solid var(--warning);
+  border-radius: var(--radius-sm); background: rgba(249, 200, 81, .07);
+}
+
+/* A button that navigates somewhere rather than acting here: it sits where a
+   destructive action would be on other cards, so it must not look like one. */
+.button.accent { color: var(--accent-ink); background: var(--accent); border-color: var(--border); font-weight: 500; }
+.button.accent:hover { background: var(--accent-strong); }
+/* A checkbox that cannot be used yet still has to be readable. */
+.check.disabled { opacity: .55; cursor: not-allowed; }
+.check.disabled input { cursor: not-allowed; }
+.indexer-path { display: inline-block; margin-top: 10px; padding: 6px 10px; font-family: var(--mono, ui-monospace, monospace); font-size: .8rem; background: var(--surface-2); border: 1px solid var(--border-strong); border-radius: var(--radius-sm, 6px); color: var(--text); }
+.title-order { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 6px; }.title-order li { display: grid; grid-template-columns: 2ch 1fr auto; gap: 10px; align-items: center; padding: 7px 10px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm, 6px); background: var(--surface-2); }.title-order-rank { font-family: var(--mono, ui-monospace, monospace); font-size: .78rem; color: var(--text-dim); font-variant-numeric: tabular-nums; }.title-order-name { font-size: .86rem; }.title-order-moves { display: flex; gap: 4px; }.title-order-moves .button { padding: 2px 9px; font-size: .8rem; line-height: 1.3; }
+.stale-bundle { margin: 8px 0 0; padding: 7px 10px; width: 100%; text-align: left; font-size: .74rem; line-height: 1.35; cursor: pointer; border-radius: var(--radius-sm, 6px); border: 1px solid var(--warning, #b7791f); background: color-mix(in srgb, var(--warning, #b7791f) 14%, transparent); color: var(--text, inherit); }
+.detail-config { margin-top: 22px; }
+.detail-config .parsed-grid { grid-template-columns: max-content minmax(0, 1fr); }
+.setup-rows { display: grid; align-content: start; gap: 8px; margin-top: 12px; max-height: 340px; min-height: 148px; flex: 0 1 auto; overflow-y: auto; overscroll-behavior: contain; }.setup-row { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; padding: 9px 12px; text-align: left; cursor: pointer; border: 1px solid var(--border-strong); border-radius: var(--radius-sm, 6px); background: var(--surface-2); color: inherit; }.setup-row-name { grid-column: 1; grid-row: 1; display: flex; gap: 8px; align-items: baseline; }.setup-row small { grid-column: 1; grid-row: 2; }.setup-row .imported-tag { grid-column: 2; grid-row: 1 / span 2; align-self: center; }.setup-row-quality { font-size: .78rem; color: var(--text-dim); }/* Both your default profile's groups and every other saved profile's get the
+   same outline now (build 173) - green/yellow read as good/danger, which is
+   not what "you already have a profile for this" means. The order (default
+   profile first, then other profiles, then everyone else) is untouched: only
+   the color was misleading, not the ranking. */
+.setup-row.mine, .setup-row.known { border-color: var(--accent); }.setup-row.selected { border-color: var(--success); outline: 2px solid var(--success); outline-offset: -1px; background: var(--success-bg); }
+.calendar-filter { flex: 0 1 260px; min-width: 150px; padding: 7px 11px; font-size: .84rem; color: var(--text); border: 1px solid var(--border-strong); border-radius: var(--radius-sm, 6px); background: var(--surface-2); }.calendar-filter::placeholder { color: var(--text-mute); }
+.dialog.wide { width: min(880px, 100%); }
+/* Wider by the 108px the poster gained, so the facts column keeps the width it
+   had rather than being squeezed by a bigger picture (build 146). */
+.dialog.wide.calendar-detail { width: min(988px, 100%); }
+/* Room above a section heading. It sat directly under the controls and
+   directly under the last card of the section before it, so the heading read
+   as part of whatever was above rather than as the start of what follows. */
+.week-head { margin-top: 34px; }
+.anime-grid + .week-head { margin-top: 40px; }
+.week-head:first-of-type { margin-top: 26px; }
+/* The Shoko section sits after a grid of cards like the other headings do,
+   but its heading is inside a section of its own - so the two margins
+   collapsed to the section's 26px instead of reading as the same step
+   (build 102). One margin, the same as the rest. */
+.shoko-gap { margin-top: 0; }
+.shoko-gap > .week-head:first-of-type { margin-top: 40px; }
+/* The sentence under a record that says what happens next. Quieter than the
+   problem above it: it is reassurance in the waiting cases, not a second
+   warning. */
+.attention-fix { display: block; margin-top: 6px; color: var(--text-dim); line-height: 1.45; }
+.chip.resolves { margin-right: 8px; color: var(--success-text, var(--success-border)); border-color: var(--success-border); }
+/* The name and the button that searches it, on one line and the same height:
+   the button used to be at the bottom of the dialog, a long way from the
+   field it acts on. align-items: end so they meet at the baseline of the
+   input rather than the top of the label above it. */
+.setup-search-row { display: flex; align-items: end; gap: 10px; }
+/* The filters were flush against the search field above them (build 124).
+   On the grid itself rather than as an adjacent-sibling rule: the progress
+   bar and two error lines render between them, so "+" would have applied the
+   spacing only while none of those were on screen. */
+.setup-filters { margin-top: 14px; }
+.setup-search-row .field { flex: 1 1 auto; min-width: 0; }
+.setup-search-row .button { flex: 0 0 auto; padding: 10px 18px; }
+/* Two panes once a row is selected: the list on the left, that row's files on
+   the right. Wider only then - with nothing selected there is no second
+   column and the dialog stays the size it was. */
+.dialog.wide.split { width: min(1500px, 100%); }
+.setup-split { display: grid; gap: 16px; min-height: 0; }
+.setup-split.open { grid-template-columns: minmax(320px, 5fr) minmax(360px, 7fr); max-height: 52vh; }
+.setup-split-list { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+/* min-height: 0 on both, or the table's own scroller never engages: a flex
+   or grid child is as tall as its content unless it is allowed to shrink,
+   and the overflow was simply being clipped. Reported as "for some reason
+   the scrolling is disabled in this one". */
+.setup-split-files { display: flex; flex-direction: column; gap: 8px; min-width: 0; min-height: 0; padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); }
+.selection-files { display: flex; flex-direction: column; gap: 8px; min-width: 0; min-height: 0; flex: 1 1 auto; }
+.selection-files h3 { margin: 0; font-size: .95rem; }
+.selection-files .scan-table-wrap { flex: 1 1 auto; min-height: 120px; max-height: none; }
+/* An episode nothing has published yet. Dimmer than a file, and still a row -
+   for an ongoing show, how far the group has got is the useful part. */
+.scan-row-waiting td { color: var(--text-mute); }
+/* Offered by the group and already in the library (build 221): dimmed, with a tag, rather than looking like work to do. */
+.scan-table tr.scan-row-owned td { color: var(--text-mute); }
+.owned-tag { display: block; margin-top: 2px; color: var(--success, #3fb950); font-size: .72rem; font-weight: 600; }
+/* Several files for one episode stack rather than run together. */
+.scan-file { display: block; }
+.scan-file + .scan-file { margin-top: 4px; }
+.scan-file-line { display: flex; gap: 10px; align-items: baseline; justify-content: space-between; }
+.scan-file-line + .scan-file-line { margin-top: 4px; }
+.scan-names summary { cursor: pointer; color: var(--text-dim); font-size: .82rem; }
+/* One column on a narrow window: the files go under the list rather than
+   squeezing it to nothing. */
+@media (max-width: 1100px) {
+  .setup-split.open { grid-template-columns: 1fr; }
+}.setup-actions { flex-wrap: wrap; justify-content: space-between; gap: 12px; }.setup-actions-group { display: flex; flex-wrap: wrap; gap: 10px; }
+.storage-path-mount { white-space: nowrap; }
+/* -- the install wizard (build 137) --------------------------------------
+   A fresh AniFlow asks four things before it can be used, and they used to
+   live in four places. The shape below came out of four rounds on a throwaway
+   mockup (docs/wizard-mockup.html), and two of its rules are worth keeping
+   when this is edited:
+
+   * the card is pinned to the top of the page rather than centred, and the
+     controls sit *above* the content - otherwise a taller step moves the
+     button somebody is aiming at;
+   * a step with one thing on it is centred; two choices stay left and right.
+-------------------------------------------------------------------------- */
+.setup-screen {
+  display: grid;
+  place-items: start center;
+  min-height: 100vh;
+  padding: 80px 20px 110px;
+  background: radial-gradient(circle at top right, var(--surface-3) 0, var(--bg-deep) 36%);
+  background-attachment: fixed;
+}
+.setup-card {
+  width: min(920px, 100%);
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--surface-2);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, .45);
+}
+.setup-head { display: flex; align-items: center; gap: 12px; padding: 20px 26px; border-bottom: 1px solid var(--border); background: var(--surface); }
+.setup-head .brand-mark { width: 40px; height: 40px; }
+.setup-count { margin-left: auto; color: var(--text-mute); font-size: .78rem; font-variant-numeric: tabular-nums; }
+/* Import folders (build 254) */
+.import-library { margin-top: 14px; }
+.import-library h3 { margin: 0 0 6px; font-size: .95rem; }
+.import-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; max-height: 52vh; overflow-y: auto; overscroll-behavior: contain; }
+.import-row { padding: 10px 12px; border: 1px solid var(--border-strong); border-radius: var(--radius-md); background: var(--surface-2); }
+.import-row.tracked { opacity: .65; }
+.import-row.imported { border-color: var(--success-border); }
+.import-row.failed { border-color: var(--danger-border); }
+.import-row.skipped { border-color: var(--warning-border); }
+.import-line { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; }
+.import-row.imported .import-line, .import-row.failed .import-line, .import-row.skipped .import-line { grid-template-columns: minmax(0, 1fr); }
+.import-name { display: grid; gap: 2px; min-width: 0; }
+.import-name small { color: var(--text-mute); overflow-wrap: anywhere; }
+.import-note.matched { color: var(--success); }
+.import-note.unmatched { color: var(--warning); }
+.import-note.warn { color: var(--danger); }
+.import-note a, .import-name a { color: var(--accent); }
+.import-search { display: grid; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border-strong); }
+.import-search-box { display: flex; gap: 8px; }
+.import-search-box input { flex: 1 1 auto; min-width: 0; height: 38px; padding: 9px 11px; color: var(--text); border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--field); }
+.import-match { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 6px 2px; }
+.import-automate { margin-top: 12px; }
+.import-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin: 14px 0 6px; }
+.import-filters { display: flex; flex-wrap: wrap; gap: 6px; }
+.import-filter { padding: 6px 12px; font-size: .84rem; color: var(--text-dim); border: 1px solid var(--border-strong); border-radius: 999px; background: var(--surface-2); cursor: pointer; }
+.import-filter span { margin-left: 4px; color: var(--text-mute); }
+.import-filter.active { color: var(--text); border-color: var(--accent); background: var(--surface-3); }
+.import-filter-text { flex: 1 1 200px; min-width: 0; height: 36px; padding: 7px 11px; color: var(--text); border: 1px solid var(--border-strong); border-radius: var(--radius-sm, 6px); background: var(--field); }
+.import-bulk { display: flex; gap: 4px; }
+.import-count { margin: 4px 0 0; font-size: .8rem; }
+.import-more { display: flex; justify-content: center; margin-top: 12px; }
+.import-via { margin: 0; font-size: .82rem; }
+.import-bar { height: 10px; border-radius: 999px; background: var(--surface-3); overflow: hidden; }
+.import-bar-fill { height: 100%; background: var(--success); transition: width .2s ease; }
+.import-summary { margin: 0 0 10px; padding: 9px 12px; border: 1px solid var(--warning-border); border-radius: var(--radius-md); }
+.import-summary.good { border-color: var(--success-border); }
+.import-prompt { display: grid; justify-items: center; gap: 10px; margin-top: 18px; padding: 14px 18px; border: 1px solid var(--accent); border-radius: var(--radius-md); background: var(--accent-soft); text-align: center; }
+.import-prompt p { margin: 0; }
+.setup-language { height: 30px; padding: 3px 8px; color: var(--text); font-size: .78rem; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--field); }
+
+.setup-rail { display: flex; gap: 4px; padding: 14px 26px 16px; }
+.setup-rail-item { flex: 1 1 0; min-width: 0; }
+.setup-rail-bar { height: 3px; border-radius: 2px; background: var(--border-strong); }
+.setup-rail-item.done .setup-rail-bar { background: var(--success); }
+.setup-rail-item.now .setup-rail-bar { background: var(--accent); }
+.setup-rail-label { margin-top: 7px; overflow: hidden; color: var(--text-mute); font-size: .7rem; letter-spacing: .04em; text-overflow: ellipsis; text-transform: uppercase; white-space: nowrap; }
+.setup-rail-item.now .setup-rail-label { color: var(--accent-nav); }
+
+.setup-nav { display: flex; align-items: center; gap: 12px; padding: 16px 26px; border-bottom: 1px solid var(--border); background: var(--surface); }
+.setup-nav-mid { margin: 0 auto; color: var(--text-mute); font-size: .78rem; text-align: center; }
+.setup-nav-right { display: flex; gap: 10px; }
+
+.setup-body { padding: 24px 26px 28px; }
+.setup-error { margin: 0 0 16px; color: var(--danger); font-size: .85rem; }
+.setup-help { margin: 28px 0 0; padding-top: 14px; border-top: 1px solid var(--border-strong); font-size: .8rem; color: var(--text-dim); text-align: center; }
+.setup-centred { max-width: 460px; margin: 0 auto; }
+.setup-centred > .eyebrow, .setup-centred > h2, .setup-centred > .setup-lede { text-align: center; }
+/* The first-run notice: a reading column that scrolls on its own, so the tick box stays in view below it. */
+.setup-terms { max-width: 720px; margin: 0 auto; }
+.setup-terms-text { max-height: 46vh; min-height: 0; margin: 14px 0; padding: 4px 18px; overflow-y: auto; overscroll-behavior: contain; border: 1px solid var(--border-strong); border-radius: var(--radius-md); background: var(--surface); }
+.setup-terms-text h3 { margin: 16px 0 4px; font-size: .95rem; }
+.setup-terms-text p { margin: 0 0 8px; font-size: .86rem; line-height: 1.55; color: var(--text-dim); }
+.setup-terms-agree { display: flex; align-items: flex-start; gap: 10px; font-weight: 600; }
+.setup-body h2 { margin: 0 0 6px; font-size: 1.3rem; }
+.setup-lede { margin: 0 0 22px; max-width: 92ch; color: var(--text-dim); font-size: .9rem; }
+.setup-lede-tight { margin-bottom: 10px; }
+.setup-hint-block { margin: 0 0 18px; color: var(--text-mute); font-size: .76rem; }
+.setup-fields { display: grid; gap: 14px; }
+.setup-fields .field input.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .84rem; }
+.setup-divider { height: 1px; margin: 4px 0; background: var(--border-strong); }
+.setup-field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+.setup-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.setup-choice {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px;
+  cursor: pointer;
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  text-align: left;
+  transition: border-color .15s ease, background-color .15s ease, transform .12s ease;
+}
+.setup-choice:hover:not(.locked) { border-color: var(--accent); transform: translateY(-1px); }
+.setup-choice.selected { border-color: var(--accent); background: var(--accent-soft); }
+.setup-choice.locked { cursor: not-allowed; opacity: .72; }
+.setup-choice h3 { margin: 0; font-size: 1.05rem; font-weight: 500; }
+.setup-choice p { margin: 0; color: var(--text-dim); font-size: .84rem; }
+.setup-tick { position: absolute; top: 14px; right: 14px; display: grid; place-items: center; width: 22px; height: 22px; color: var(--accent-ink); border-radius: 50%; background: var(--accent); font-size: .8rem; }
+.setup-lock { position: absolute; top: 14px; right: 14px; color: var(--warning); font-size: .95rem; }
+.setup-extra { margin-top: auto; padding: 9px 11px; border-radius: var(--radius-sm); background: var(--bg-deep); color: var(--text-dim); font-size: .79rem; }
+
+/* The checklist (build 232): a mark per row - green tick, amber !, red cross - and a way to the page that fixes it. */
+.library-space { display: block; margin-top: 2px; color: var(--text-mute); }
+.library-space.low { color: var(--warning); }
+.checks-page { display: grid; gap: 16px; }
+.checks-top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.checks-group { margin-top: 16px; }
+.checks-group h3 { margin: 0 0 6px; font-size: .95rem; }
+.checks-summary { margin: 10px 0 0; padding: 9px 12px; border: 1px solid var(--border-strong); border-radius: var(--radius-md); font-size: .88rem; }
+.checks-summary.ok { border-color: var(--success); }
+.checks-summary.warning { border-color: var(--warning); background: color-mix(in srgb, var(--warning) 10%, transparent); }
+.checks-summary.error { border-color: var(--danger); background: color-mix(in srgb, var(--danger) 10%, transparent); }
+.checks-list { display: grid; gap: 8px; margin: 10px 0 0; padding: 0; list-style: none; }
+.checks-row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); }
+.checks-mark { display: grid; place-items: center; flex: 0 0 auto; width: 26px; height: 26px; border-radius: 999px; font-weight: 700; font-size: .85rem; border: 1px solid var(--border-strong); }
+.checks-mark.ok { color: var(--success); border-color: var(--success); }
+.checks-mark.warning { color: var(--warning); border-color: var(--warning); }
+.checks-mark.error { color: var(--danger); border-color: var(--danger); }
+.checks-mark.skipped { color: var(--text-mute); }
+.checks-text { display: grid; gap: 2px; flex: 1 1 auto; min-width: 0; }
+.checks-text small { color: var(--text-mute); overflow-wrap: anywhere; }
+.checks-row .button { flex: 0 0 auto; white-space: nowrap; }
+/* Choose the AniDB entry (build 229): a list of the entries an anime might be, each with what the id list knows. */
+.anidb-choose { width: min(680px, 100%); }
+.anidb-choose-state { margin: 6px 0 12px; padding: 9px 12px; border: 1px solid var(--border-strong); border-radius: var(--radius-md); font-size: .85rem; }
+.anidb-choose-state.confirmed { border-color: var(--success); }
+.anidb-choose-state.unconfirmed { border-color: var(--warning); background: color-mix(in srgb, var(--warning) 10%, transparent); }
+.anidb-choose-state.contradicted { border-color: var(--danger); background: color-mix(in srgb, var(--danger) 10%, transparent); }
+.anidb-choose-list { display: grid; gap: 8px; max-height: 340px; overflow-y: auto; overscroll-behavior: contain; margin: 6px 0 14px; }
+.anidb-choose-row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); }
+.anidb-choose-row.current { border-color: var(--accent-strong); }
+.anidb-choose-row.other { opacity: .72; }
+.anidb-choose-name { display: grid; gap: 2px; flex: 1 1 auto; min-width: 0; font-weight: 500; }
+.anidb-choose-name small { color: var(--text-mute); font-weight: 400; overflow-wrap: anywhere; }
+.anidb-choose-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.anidb-choose-tag { padding: 1px 8px; border: 1px solid var(--border-strong); border-radius: 999px; font-style: normal; font-size: .72rem; }
+.anidb-choose-tag.good { border-color: var(--success); color: var(--success); }
+.anidb-choose-tag.warn { border-color: var(--warning); color: var(--warning); }
+.anidb-choose-actions { display: flex; align-items: center; gap: 10px; flex: 0 0 auto; }
+.anidb-choose-manual { display: flex; align-items: flex-end; gap: 10px; }
+.anidb-choose-manual label { flex: 1 1 auto; }
+/* No torrent client set up (build 227): a yellow row, the same warning colour as the wizard's notes. */
+.client-notice { display: flex; align-items: center; gap: 10px; margin: 0 0 14px; padding: 10px 14px; border: 1px solid var(--warning); border-radius: var(--radius-md); background: color-mix(in srgb, var(--warning) 12%, transparent); font-size: .85rem; }
+.client-notice > span:first-child { color: var(--warning); }
+.client-notice > span:nth-child(2) { flex: 1 1 auto; min-width: 0; }
+.client-notice .button { flex: 0 0 auto; white-space: nowrap; }
+.setup-flow { display: flex; align-items: flex-start; gap: 6px; padding: 12px 0 2px; }
+.setup-flow-step { flex: 1 1 0; min-width: 0; text-align: center; }
+.setup-flow-step svg { display: block; margin: 0 auto 5px; }
+.setup-flow-step b { display: block; font-size: .76rem; font-weight: 500; }
+.setup-flow-step code { display: block; margin-top: 2px; overflow: hidden; color: var(--text-mute); font-size: .64rem; text-overflow: ellipsis; }
+.setup-flow-arrow { padding-top: 12px; color: var(--text-mute); font-size: .85rem; }
+
+.setup-unlock { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 16px; padding: 12px 14px; border: 1px dashed var(--border-strong); border-radius: var(--radius-md); background: var(--bg-deep); }
+.setup-unlock-text { flex: 1 1 260px; min-width: 0; color: var(--text-dim); font-size: .82rem; }
+.setup-unlock-text b { display: block; color: var(--text); font-size: .88rem; font-weight: 500; }
+.setup-unlock-actions { display: flex; gap: 8px; align-items: center; }
+
+.setup-panel { overflow: hidden; border: 1px solid var(--border-strong); border-radius: var(--radius-md); background: var(--surface); }
+.setup-panel-head { display: flex; align-items: center; gap: 10px; padding: 13px 16px; }
+.setup-panel-head b { font-size: .92rem; font-weight: 500; }
+.setup-panel-head .why { color: var(--text-mute); font-size: .76rem; }
+.setup-panel-body { padding: 0 16px 16px; }
+.setup-inline { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 12px; }
+
+.setup-paste { display: flex; gap: 8px; align-items: flex-end; }
+.setup-paste .field { flex: 1 1 auto; }
+.setup-sub { margin: 22px 0 0; padding-top: 16px; border-top: 1px solid var(--border-strong); color: var(--text-dim); font-size: .82rem; font-weight: 500; }
+.setup-feeds { display: grid; gap: 8px; margin-top: 12px; }
+.setup-feed { display: flex; align-items: center; gap: 10px; padding: 11px 14px; border: 1px solid var(--border-strong); border-radius: var(--radius-md); background: var(--surface); font-size: .85rem; }
+.setup-feed small { display: block; color: var(--text-mute); font-size: .74rem; }
+
+.setup-tasks { display: grid; gap: 10px; }
+.setup-task { display: flex; align-items: center; gap: 12px; padding: 13px 16px; border: 1px solid var(--border-strong); border-radius: var(--radius-md); background: var(--surface); }
+.setup-task b { font-size: .9rem; font-weight: 500; }
+.setup-task span { color: var(--text-mute); font-size: .78rem; }
+.setup-task { flex-wrap: wrap; }
+/* The row's progress bar (build 230): green is done, yellow the stretch being worked on, and with nothing
+   to measure a yellow stretch just moves along it. Full width under the text. */
+.setup-task-bar { position: relative; flex: 0 0 100%; height: 5px; overflow: hidden; border-radius: 999px; background: var(--surface-3); }
+.setup-task-bar-reach, .setup-task-bar-fill, .setup-task-bar-moving { position: absolute; top: 0; bottom: 0; left: 0; border-radius: 999px; }
+.setup-task-bar-reach { background: var(--warning); opacity: .85; }
+.setup-task-bar-fill { background: var(--success); transition: width .6s ease; }
+.setup-task-bar-moving { width: 32%; background: var(--warning); animation: setup-task-bar-slide 1.4s ease-in-out infinite; }
+@keyframes setup-task-bar-slide { 0% { left: -32%; } 100% { left: 100%; } }
+.setup-task .state { margin-left: auto; color: var(--accent-strong); font-size: .8rem; white-space: nowrap; }
+.setup-task .state.waiting { color: var(--text-mute); }
+.setup-task .state.running { color: var(--accent-strong); }
+.setup-task .state.done { color: var(--success); }
+.setup-task .state.failed { color: var(--danger); }
+
+/* The notes on every wizard step: the yellow one that says a choice is
+   permanent, the red one that says AniFlow ships no indexers, the green one
+   that confirms something was accepted. Three colours because they mean three
+   different things, and a warning that reads like body text is not a warning -
+   which is what shipped in build 137's first cut. */
+.setup-note {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+  padding: 11px 14px;
+  border: 1px solid var(--warning-border);
+  border-left-width: 3px;
+  border-radius: var(--radius-sm);
+  background: #f9c8510f;
+  color: var(--warning);
+  font-size: .82rem;
+  line-height: 1.5;
+}
+.setup-note b { font-weight: 600; }
+.setup-note code { color: inherit; }
+.setup-note.good { color: var(--success); border-color: var(--success); background: var(--success-bg); }
+.setup-note.bad { color: var(--danger); border-color: var(--danger); background: #ff6c6c14; }
+.setup-note.tight { margin-top: 0; margin-bottom: 20px; padding: 8px 12px; font-size: .8rem; }
+
+@media (max-width: 720px) {
+  .setup-choices, .setup-field-row { grid-template-columns: 1fr; }
+  .setup-rail-label { display: none; }
+}
+
+/* -- Find my files (build 139) -------------------------------------------
+   Two lists in one dialog: the folders, then what is in the chosen one. The
+   second list is deliberately plain - it is read once, to decide whether the
+   answer is right, and then never again. */
+.find-files { width: min(1040px, 94vw); }
+.find-files-sub { margin: 18px 0 8px; font-size: .9rem; font-weight: 500; color: var(--text-dim); }
+.find-files-list { display: grid; gap: 8px; }
+.find-files-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  font-size: .88rem;
+}
+.find-files-row:hover { border-color: var(--accent); }
+.find-files-row.chosen { border-color: var(--accent); background: var(--accent-soft); }
+.find-files-name { display: grid; min-width: 0; }
+.find-files-name small { color: var(--text-mute); font-size: .74rem; }
+.find-files-score { margin-left: auto; color: var(--text-mute); font-size: .78rem; font-variant-numeric: tabular-nums; }
+.find-files-score.strong { color: var(--success); }
+.find-files-plan { display: grid; gap: 4px; max-height: 260px; overflow-y: auto; padding-right: 4px; }
+.find-files-file { display: flex; align-items: baseline; gap: 10px; padding: 6px 8px; border-radius: var(--radius-sm); background: var(--bg-deep); font-size: .8rem; }
+.find-files-file.skipped { color: var(--text-mute); }
+.find-files-episode { min-width: 3em; color: var(--accent-nav); font-variant-numeric: tabular-nums; }
+.find-files-file.skipped .find-files-episode { color: var(--text-mute); }
+.find-files-filename { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.find-files-tags { margin-left: auto; color: var(--text-mute); font-size: .74rem; white-space: nowrap; }
+.note-inline { margin: 10px 0 0; color: var(--warning); font-size: .8rem; }
+
+.login-screen { display: grid; place-items: center; min-height: 100vh; padding: 24px; }.login-waiting { display: grid; place-items: center; min-height: 100vh; }.login-card { width: min(420px, 100%); padding: 28px; border: 1px solid var(--border-strong); border-radius: var(--radius-lg); background: var(--surface-2); box-shadow: 0 24px 80px rgba(0,0,0,.45); }.login-brand { display: flex; gap: 12px; align-items: center; margin-bottom: 22px; }.login-brand small { display: block; }.login-card h1 { margin: 0 0 6px; font-size: 1.35rem; }.login-form { display: grid; gap: 14px; margin-top: 18px; }.login-submit { width: 100%; }.login-links { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 16px; }.link-button { padding: 0; font-size: .84rem; color: var(--accent-strong); cursor: pointer; border: 0; background: transparent; }.sidebar-account { display: flex; gap: 8px; align-items: center; justify-content: space-between; margin-top: auto; padding-top: 14px; border-top: 1px solid var(--border); font-size: .82rem; }.sidebar-account strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.account-avatar { display: grid; place-items: center; width: 26px; height: 26px; flex: 0 0 26px; font-size: .78rem; font-weight: 600; color: var(--surface-3); border-radius: 50%; background: var(--accent-strong); }.sidebar-account strong { flex: 1 1 auto; }
+.source-tag { margin-left: 8px; padding: 1px 7px; font-size: .7rem; color: var(--text-dim); border: 1px solid var(--border-strong); border-radius: 999px; }
+.anime-progress.needs-conversion { color: var(--danger, #e06c75); font-weight: 600; }/* No margin of its own: this panel is a cell in .detail-layout, whose own
+   margin-top spaces the row. The 22px left over from when it was rendered
+   outside that grid made the left column start below the Lifecycle panel
+   beside it. */
+.basic-notice { margin-top: 0; }
+.shoko-series { display: grid; gap: 6px; padding: 12px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm, 6px); background: var(--surface-2); }.shoko-missing { display: grid; gap: 4px; margin: 6px 0 0; padding: 0; list-style: none; }.shoko-missing li { display: grid; grid-template-columns: 4ch minmax(0, 1fr) max-content; gap: 10px; align-items: baseline; font-size: .82rem; }.shoko-episode { font-family: var(--mono, ui-monospace, monospace); color: var(--text-dim); }
+.input-clear { position: relative; display: grid; }.input-clear input { padding-right: 30px; }.input-clear button { position: absolute; top: 50%; right: 6px; width: 20px; height: 20px; padding: 0; transform: translateY(-50%); display: grid; place-items: center; cursor: pointer; font-size: .9rem; line-height: 1; color: var(--text-mute); border: 0; border-radius: 50%; background: transparent; }.input-clear button:hover, .input-clear button:focus-visible { color: var(--text); background: var(--surface-3); transform: translateY(-50%) scale(1.15); }
+.toast-stack { position: fixed; z-index: 40; display: grid; gap: 8px; max-width: min(360px, calc(100vw - 32px)); pointer-events: none; }.toast-stack.top-right { top: 16px; right: 16px; }.toast-stack.top-left { top: 16px; left: 16px; }.toast-stack.bottom-right { bottom: 16px; right: 16px; }.toast-stack.bottom-left { bottom: 16px; left: 16px; }.toast { pointer-events: auto; text-align: left; padding: 11px 14px; font-size: .85rem; line-height: 1.35; cursor: pointer; color: var(--text); border: 1px solid var(--border-strong); border-left-width: 3px; border-radius: var(--radius-sm, 6px); background: var(--surface-2); box-shadow: 0 10px 30px rgba(0, 0, 0, .35); animation: toast-in .16s ease-out; }.toast-success { border-left-color: var(--success-border); }.toast-error { border-left-color: var(--danger, #e06c75); }.toast-info { border-left-color: var(--accent-strong); }@keyframes toast-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }@media (prefers-reduced-motion: reduce) { .toast { animation: none; } .close, .icon-button, .input-clear button { transition: color .15s ease, background-color .15s ease; } .close:hover, .icon-button:hover, .close:active, .icon-button:active { transform: none; }  .setup-task-bar-moving { animation: none; left: 0; width: 100%; opacity: .6; } }
+.health-block { display: grid; gap: 2px; padding: 6px 0; }.health-block .health { padding: 2px 8px; }.health-dot.down { background: var(--danger-border); }.health-dot.warn { background: var(--warning-border); }.health-dot.idle { background: var(--text-mute); }
+/* The second line on every card (build 117): how finished this entry is, and
+   what the other library says. Small and quiet - it is a status, not a
+   heading - and the colour carries the meaning, so the words stay the same
+   two words on every card and become recognisable as a pair. */
+/* The four health icons (builds 120-151) are gone: the watchlist card has
+   two corners and the Edit dialog a Checks list instead (151, 152). */
+/* The Debug windows (build 120). */
+.dialog-head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+.dialog-head h2, .dialog-head h3 { display: flex; align-items: center; gap: 8px; margin: 0; margin-right: auto; }
+.dialog-head .close, .dialog-head .icon-button { flex: none; }
+/* A checkbox and what it means, with room between them (build 124):
+   *"please add a space between the check box and the I."*  The class was
+   used and had no rule at all, so the box and its label were flush. */
+.switch-row { display: flex; align-items: flex-start; gap: 10px; margin-top: 14px; cursor: pointer; }
+.switch-row input { margin: 2px 0 0; flex: none; }
+.switch-row small { display: block; margin-top: 2px; }
+/* "In library" is the good outcome, so it reads like one. */
+/* The episode row's one state line (build 125). Three colours for twelve
+   states: the good outcome green, a fault red, and everything that is merely
+   *waiting* neutral - an episode that has not aired, has no release yet, or
+   is being left alone on purpose is not a problem and must not look like one.
+   Build 118 had to undo exactly that mistake once already. */
+/* A group of records that share one cause (build 125). Four episodes that
+   failed because qBittorrent was down are one problem, not four - so the
+   headline is the row, and the individual records are behind it. */
+/* The sample seeder, last on the page and visibly a developer tool. */
+.debug-samples { margin-top: 18px; }
+/* Build 127: the group head is now the same row as everything else, inside
+   the same box. Reported as *"these are a bit different they seems to be not
+   inside a bubble like the rest, i guess because they are grouped, but can
+   they not be still inside the more dark grey box, so its all consistent?"*
+   They can. */
+.attention-group { display: grid; gap: 8px; }
+.attention-group-items { display: grid; gap: 8px; margin: 2px 0 0 10px; padding-left: 10px; border-left: 2px solid var(--border-strong); }
+.episode-state { color: var(--text-dim); }
+.episode-state.good { color: var(--success-text, var(--success-border)); }
+.episode-state.bad { color: var(--danger, #e06c75); }
+
+/* Attention rows: one line each until opened (build 118). The list is a list
+   of problems; the details belong to whichever one is yours. */
+/* The old flex head and its one-line clamps went in build 127: the row is
+   the Activity row's three-column grid now, and .attention-main does the
+   capping for both of its lines. */
+.attention-details-toggle { flex: 0 0 auto; }
+.attention-details-toggle { margin-left: auto; padding: 2px 10px; font-size: 0.85em; }
+/* Build 128: *"can you add a bit of space beween the intended text (Episode
+   and Notice) and the text below."*  The facts list and the sentence under it
+   were touching, which made one paragraph out of two different things. */
+.attention-body { margin-top: 10px; padding-left: 4px; border-left: 2px solid var(--line, #2c313a); }
+.attention-body > .attention-facts + * { margin-top: 12px; }
+/* `max-content` for the labels rather than `auto`: in a grid whose own width
+   was being decided by its contents, `auto` let the label column grow and the
+   value column collapse. This pins the labels to their longest word and gives
+   everything else to the value. */
+.attention-facts { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 2px 14px; margin: 0 0 10px; padding-left: 10px; }
+.attention-facts dt { color: var(--muted, #8a8f98); white-space: nowrap; }
+/* `break-word`, not `anywhere`: `anywhere` breaks mid-word whenever it can
+   rather than only when it must, which is what turned one filename into
+   five lines ending in a lone "v". */
+.attention-facts dd { margin: 0; min-width: 0; overflow-wrap: break-word; }
+.attention-actions { list-style: none; margin: 0; padding: 0 0 0 10px; display: grid; gap: 10px; }
+.attention-actions > li { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.attention-action-what { flex: 1 1 260px; display: grid; gap: 2px; min-width: 0; }
+.health-block .version-tag { padding: 2px 8px 0 24px; }
+.empty-state.compact { margin: 3vh auto 0; }
+.change-list { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }.change-list li { padding-left: 10px; border-left: 2px solid var(--border-strong); overflow-wrap: anywhere; }
+.attention-release { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; max-width: 100%; font-family: var(--mono, ui-monospace, monospace); font-size: .74rem; }
+.calendar-cache { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: 22px; padding-top: 14px; border-top: 1px solid var(--border); }
+.attention-files { display: grid; gap: 2px; }.attention-files code { font-size: .72rem; color: var(--text); }
+.inspector { display: grid; gap: 18px; margin-top: 24px; }.inspector-queue { display: flex; flex-wrap: wrap; gap: 8px; }.inspector-panes { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 18px; align-items: start; }.inspector-release, .inspector-group { display: grid; gap: 4px; }.inspector-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; width: 100%; padding: 0; text-align: left; cursor: pointer; color: var(--text); border: 0; background: transparent; }.inspector-name { flex: 1 1 auto; min-width: 0; font-family: var(--mono, ui-monospace, monospace); font-size: .78rem; overflow-wrap: anywhere; }.inspector-title { flex: 1 1 100%; }.inspector-caret { flex: 0 0 auto; width: 18px; text-align: center; color: var(--text-mute); }.inspector-release.unreadable { border-color: var(--danger-border); }.inspector-parsed { margin: 8px 0 0; }.inspector-parsed dt { color: var(--text-mute); font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; }.inspector-raw { font-family: var(--mono, ui-monospace, monospace); font-size: .74rem; overflow-wrap: anywhere; }.inspector-nested { margin-top: 10px; padding-left: 10px; border-left: 2px solid var(--border-strong); }
+.inspector-terms { width: 100%; margin-top: 14px; border-collapse: collapse; font-size: .78rem; }.inspector-terms th { text-align: left; padding: 4px 8px; color: var(--text-mute); font-weight: 500; text-transform: uppercase; letter-spacing: .04em; font-size: .68rem; }.inspector-terms td { padding: 4px 8px; border-top: 1px solid var(--border); overflow-wrap: anywhere; }.inspector-terms tr.muted td { color: var(--text-mute); }.inspector-terms tr.unreadable td { color: var(--danger); }.inspector-terms-found { font-size: .7rem; }
+.dialog.tall { display: flex; flex-direction: column; max-height: 92vh; }.setup-rows.tall { flex: 1 1 auto; min-height: 180px; max-height: 46vh; overflow-y: auto; }.settings-grid.three { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+/* Wider pages fit four (build 127): *"here of course we can show like 4
+   boxes in a row instead of 3"*. auto-fit does the deciding, so a narrow
+   window still gets fewer rather than four squeezed ones. */
+.profiles-page .settings-grid.three { grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }.setup-progress { display: flex; align-items: center; gap: 10px; margin-top: 10px; }.setup-progress progress { flex: 1 1 auto; height: 6px; }.setup-summary { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 14px; margin-top: 14px; padding: 12px 14px; border-radius: var(--radius-md); background: var(--surface-3); }.setup-summary-line { display: grid; gap: 3px; flex: 1 1 240px; min-width: 0; }.setup-summary-line strong { overflow-wrap: anywhere; }.setup-summary-folder { flex: 1 1 220px; }
+/* A label in front of its field rather than above it, for the short
+   inputs where two lines is one too many (build 124). */
+.dialog label.field.inline { display: flex; align-items: center; gap: 10px; }
+.dialog label.field.inline > span { flex: 0 0 auto; white-space: nowrap; }
+.dialog label.field.inline > input { flex: 1 1 auto; min-width: 0; }
+
+/* The build-83 metadata experiment. Kept together and at the end so the whole
+   block comes out with the page it belongs to. */
+.sources-controls { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; margin-bottom: 14px; }
+.sources-controls label { display: grid; gap: 5px; font-size: .82rem; color: var(--text-dim); }
+.sources-controls select, .sources-controls input { min-width: 130px; }
+/* A wide table on a narrow screen scrolls inside itself; the page must not. */
+.table-scroll { overflow-x: auto; }
+
+/* The update dialog's two bars (build 145). They count work items - sources
+   asked, posters fetched - never elapsed time, so neither can run backwards
+   or sit at 99%. The artwork track only appears once its total is known. */
+.calendar-update { width: min(720px, 100%); }
+.update-bar { margin: 14px 0; }
+.update-bar-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 5px; font-size: .84rem; }
+.update-bar-track { height: 8px; border-radius: 999px; background: var(--surface-3); overflow: hidden; }
+.update-bar-fill { display: block; height: 100%; border-radius: 999px; background: var(--accent-strong); transition: width .25s ease; }
+.calendar-update .trace-list { max-height: 240px; }
+
+/* The calendar's own trace (build 144). A log, so it reads like one: fixed
+   width for the time, the stage in bold, the numbers quiet underneath. */
+.trace-list { list-style: none; margin: 8px 0 0; padding: 0; max-height: 420px; overflow-y: auto; }
+.trace-list li { display: grid; grid-template-columns: 72px 84px 1fr; gap: 8px; align-items: baseline; padding: 5px 8px; border-bottom: 1px solid var(--border); font-size: .82rem; }
+.trace-list li code { color: var(--text-dim); font-size: .78rem; }
+.trace-list li strong { color: var(--text-dim); font-weight: 600; }
+.trace-list li small { grid-column: 3; color: var(--text-dim); font-size: .76rem; }
+.trace-warn { background: color-mix(in srgb, var(--warning) 9%, transparent); }
+.trace-error { background: color-mix(in srgb, var(--danger) 10%, transparent); }
+/* Narrow: the three columns stop being three. */
+@media (max-width: 640px) {
+  .trace-list li { grid-template-columns: 1fr; gap: 2px; }
+  .trace-list li small { grid-column: 1; }
+}
+.sources-table { width: 100%; border-collapse: collapse; font-size: .84rem; }
+.sources-table th, .sources-table td { padding: 7px 10px; text-align: left; white-space: nowrap; border-bottom: 1px solid var(--border); }
+.sources-table th { color: var(--text-dim); font-weight: 600; }
+.sources-table tr.is-selected { background: var(--surface-raised, rgba(255, 255, 255, .04)); }
+.sources-table td:first-child { white-space: normal; }
+
+/* Build 84: the source refresh runs as a job, so the page needs a bar per
+   source, and a merged card can open to show where its values came from. */
+.source-tasks { display: grid; gap: 8px; margin: 12px 0 4px; }
+.source-task { display: grid; gap: 5px; padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface-2); }
+.source-task.is-failed { border-color: var(--danger-border); }
+.source-task.is-done { border-color: var(--success-border); }
+.progress-track { height: 5px; overflow: hidden; border-radius: 3px; background: var(--surface-3); }
+.progress-fill { height: 100%; background: var(--accent); transition: width .2s ease; }
+/* No total yet, so the bar says "something is happening" rather than lying
+   about how much is left. */
+.progress-fill.is-waiting { width: 30%; animation: source-wait 1.2s ease-in-out infinite; }
+@keyframes source-wait { 0% { margin-left: -30%; } 100% { margin-left: 100%; } }
+/* The per-show debug panel spans both columns of the card it belongs to. */
+.work-panel { grid-column: 1 / -1; padding: 10px 12px; border-top: 1px solid var(--border); background: var(--surface-2); font-size: .8rem; }
+.work-panel .parsed-grid { margin: 0 0 8px; }
+.calendar-card .link-button { color: var(--accent-strong); border: 0; background: transparent; cursor: pointer; padding: 0; }
+
+/* An open <select> draws its list with the operating system's colours, not
+   the page's, so on a dark interface the options came out grey on white and
+   were reported as unreadable (build 87). The options have to be coloured
+   explicitly - styling the select itself only reaches the closed state.
+
+   The surface, not the field colour (build 92). --field is the darkest thing
+   in the palette because it sits *inside* a panel; as the background of a
+   floating menu it reads as black, which is how it was reported. A menu is a
+   raised surface, so it uses the raised surface colour. */
+select option, select optgroup {
+  color: var(--text);
+  background: var(--surface-3);
+}
+/* The highlighted row. Without this it keeps the system's own highlight - a
+   light bar - with the page's light text on it, so the option you are about
+   to choose is the one you cannot read (build 92). */
+select option:checked,
+select option:hover {
+  color: var(--accent-ink);
+  background: var(--accent);
+}
+
+/* The calendar card, and the view behind it (build 102).
+
+   The card is one click target: cover, then text, and the Add button inside
+   the text column stops the click from reaching the card. The detail view is
+   two columns as well - the cover on the left and every fact beside it,
+   because a dialog that has to be scrolled to reach the episode count is
+   worse than the card it was opened from. */
+.calendar-card { cursor: pointer; }
+.calendar-poster { cursor: inherit; }
+.calendar-detail-body {
+  display: grid; grid-template-columns: 318px minmax(0, 1fr); gap: 22px;
+  align-items: start; margin-top: 6px;
+}
+.calendar-detail-art { display: grid; gap: 10px; }
+/* 318 x 450, fixed, and no longer something you can click to enlarge
+   (build 146). *"its a bit stupid to have 1 window open, and then have another
+   window open on top. So we will remove this feature of zooming in but will
+   make the picture itself bigger."* The picture adapts to the frame; the frame
+   does not adapt to the picture, so every entry's dialog is the same shape. */
+.calendar-detail-art .cover, .calendar-detail-art .cover-placeholder {
+  width: 100%; height: 450px; min-height: 0; object-fit: cover;
+  border-radius: var(--radius-md);
+}
+.calendar-detail-facts { min-width: 0; }
+.calendar-detail-facts > p:first-child { margin-top: 0; }
+.fact-list {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 7px 16px;
+  margin: 12px 0 0; align-items: baseline;
+}
+.fact-list dt { color: var(--text-mute); font-size: .82rem; }
+.fact-list dd { margin: 0; }
+.calendar-detail-genres { display: flex; flex-wrap: wrap; gap: 6px; margin: 16px 0 0; }
+/* The same blue the card's genre line uses (build 150), asked for as *"just
+   adding a bit of color in there"*. The tint and the border come with it, the
+   way .chip.sev-info is built - a bare coloured word on a plain chip reads as
+   a state rather than as a label. Scoped to this list so nothing else wearing
+   a .chip changes colour. */
+.calendar-detail-genres .chip { color: var(--accent-strong); background: rgba(94, 158, 255, .15); border: 1px solid var(--accent); }
+.calendar-synopsis {
+  margin: 14px 0 0; max-height: 260px; overflow-y: auto;
+  line-height: 1.55; color: var(--text-dim);
+}
+.calendar-stars { color: var(--accent-strong); letter-spacing: .09em; }
+.calendar-detail-art .calendar-stars { text-align: center; font-size: 1rem; }
+/* A season of something already tracked, and - a shade louder - one that
+   looks like the season between two that are. */
+.related-tag { color: var(--accent-strong); }
+.calendar-card.related-sequel, .calendar-card.related-prequel { border-color: var(--accent); }
+.calendar-card.related-gap { border-color: var(--warning-border); box-shadow: inset 0 0 0 1px var(--warning-border); }
+
+/* Narrow: the cover goes back above the facts, because 210px and a column of
+   text do not both fit on a phone. */
+@media (max-width: 620px) {
+  .calendar-detail-body { grid-template-columns: minmax(0, 1fr); }
+  /* Narrow: the poster stops being a fixed frame and becomes as wide as
+     the dialog, because 318px of a 360px screen is the whole screen. */
+  .calendar-detail-art { max-width: 318px; }
+  .calendar-detail-art .cover, .calendar-detail-art .cover-placeholder { height: auto; }
+}
+
+/* A line that says something can be improved, with the button that does it
+   (build 104). Not an error - nothing failed - and not a warning either. */
+.notice-message {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
+  margin: 0 0 14px; padding: 11px 14px;
+  border: 1px solid var(--border-strong); border-radius: var(--radius-md);
+  background: var(--surface-2); color: var(--text-dim); font-size: .86rem;
+}
+.notice-message .button { flex: 0 0 auto; }
+
+/* The Release Inspector's own copy of the season (build 105).
+
+   Two rows tall and scrolled, which is what was asked for: enough of the
+   season to find something in, not so much that the page is a calendar. The
+   cards are small on purpose - a name, a picture and the button - so the
+   artwork is cropped where the calendar's is not. */
+/* Beside the season label, right-packed by the auto margin rather than a
+   second flex row - the empty space it sits in was already there (build
+   171). */
+.inspector-season-filter {
+  margin-left: auto; width: 220px; min-width: 140px; padding: 7px 11px;
+  color: var(--text); border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm); background: var(--field);
+}
+.inspector-season {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 10px; max-height: 300px; overflow-y: auto;
+  padding: 2px; overscroll-behavior: contain;
+}
+.inspector-season-card {
+  display: grid; grid-template-columns: 54px minmax(0, 1fr); gap: 10px;
+  align-items: center; padding: 8px; min-width: 0;
+  border: 1px solid var(--border); border-radius: var(--radius-md);
+  background: var(--surface);
+}
+.inspector-season-card.selected { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.inspector-season-art { grid-row: 1 / span 2; display: block; }
+.inspector-season-art .cover, .inspector-season-art .cover-placeholder {
+  width: 54px; height: 76px; min-height: 0; object-fit: cover;
+  border-radius: var(--radius-sm, 6px); font-size: 1rem;
+}
+.inspector-season-card strong {
+  font-size: .82rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.inspector-season-card .button { justify-self: start; padding: 4px 8px; font-size: .76rem; }
+
+/* Every name the show goes by, each one a search. */
+.inspector-names {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 14px;
+  margin: 6px 0 16px; align-items: baseline;
+}
+.inspector-names dt { color: var(--text-mute); font-size: .78rem; }
+.inspector-names dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+
+/* The name buttons on the left, the mode and the button that runs it on the
+   right - the mode is what the search *is*, so it belongs with it. */
+.inspector-search-row {
+  display: flex; flex-wrap: wrap; align-items: flex-end;
+  justify-content: space-between; gap: 12px; margin-top: 10px;
+}
+.inspector-mode { min-width: 230px; margin: 0; }
+.inspector-mode-hint { margin: 8px 0 0; font-size: .8rem; }
+/* How many pages a custom term reads (build 170) - only custom asks, so it
+   only appears beside the mode picker while custom is chosen. */
+.inspector-pages { width: 70px; margin: 0; }
+.inspector-pages input { text-align: center; }
+/* The custom mode's own list, built with the `+` button beside the search
+   box (build 170). A row of small pills rather than another table: there is
+   nothing to compare between two terms here, only which ones are still in
+   the list. */
+.inspector-custom-terms {
+  display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 0; padding: 0;
+  list-style: none;
+}
+.inspector-custom-terms li {
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px 4px 12px;
+  font-size: .82rem; color: var(--text); border: 1px solid var(--border-strong);
+  border-radius: 999px; background: var(--surface-3);
+}
+.inspector-custom-terms button {
+  display: grid; place-items: center; width: 18px; height: 18px; padding: 0;
+  line-height: 1; font-size: .85rem; color: var(--text-mute); cursor: pointer;
+  border: 0; border-radius: 50%; background: transparent;
+}
+.inspector-custom-terms button:hover, .inspector-custom-terms button:focus-visible {
+  color: var(--text); background: var(--surface-2);
+}
+/* The edition sat straight against the folder name - "Re:Zero S4dual-audio" -
+   in the setup window as well as the inspector, because nothing had ever
+   styled it (build 105). One rule, both places. */
+.setup-row-edition { display: block; margin-top: 2px; color: var(--text-mute); }
+/* The filters, beside the rows they filter (build 106). */
+.inspector-filters { margin: 4px 0 16px; align-items: start; }
+/* The address a term was asked at, on demand (build 107). */
+.inspector-url { margin-left: 10px; font-size: .72rem; }
+.inspector-url-text {
+  display: block; margin-top: 4px; padding: 4px 6px;
+  font-family: var(--mono, ui-monospace, monospace); font-size: .7rem;
+  color: var(--text-dim); background: var(--surface-2);
+  border-radius: var(--radius-sm, 6px); overflow-wrap: anywhere;
+  white-space: pre-wrap; user-select: all;
+}
+/* The group rows of the Release Inspector (build 109).
+
+   Two lines: the group with its quality and everything else the parser
+   recognised, and the folder underneath. The second line is *not* muted -
+   with several rows of one group it is the only thing telling them apart, so
+   it has to read like a name rather than like a footnote. */
+.setup-row-misc { font-size: .74rem; color: var(--text-mute); }
+.setup-row-misc::before { content: "| "; }
+.seed-mark { display: inline-flex; align-items: center; gap: 5px; font-size: .74rem; color: var(--text-dim); white-space: nowrap; }
+.seed-mark::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--text-mute); }
+.seed-alive::before { background: var(--success); }
+.seed-dead::before { background: var(--danger); }
+.seed-dead { color: var(--danger); }
+.setup-row-lang { font-size: .72rem; line-height: 1.5; padding: 0 7px; border: 1px solid var(--border-strong); border-radius: 999px; color: var(--text-dim); white-space: nowrap; }
+.setup-row-tag { display: inline-block; margin: 0 6px 0 0; font-size: .72rem; line-height: 1.5; padding: 0 7px; border: 1px solid var(--accent, var(--border-strong)); border-radius: 999px; color: var(--text); white-space: nowrap; }
+.setup-row-tag.not { border-style: dashed; border-color: var(--border-strong); color: var(--text-mute); text-decoration: line-through; }
+.setup-row-other { display: block; margin-top: 4px; color: var(--warning, var(--text-dim)); }
+.setup-row-folder { grid-column: 1; grid-row: 2; color: var(--text); font-size: .78rem; }
+.setup-row-folder .setup-row-edition { color: var(--text-mute); }
+/* The bar while a search runs, and what it cost when it stops (b109). */
+.inspector-progress { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.inspector-progress progress { flex: 1 1 auto; height: 6px; }
+.inspector-time { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.inspector-total { color: var(--text); }
+/* The mode beside the name it searches with (build 111). The name is what
+   gets read and edited, so it keeps the room; the mode is a list of fixed
+   choices and takes what it needs. */
+.setup-search-row .setup-mode { flex: 0 1 290px; min-width: 180px; }
+/* The indexer to ask, only when there is more than one (build 219). */
+.setup-search-row .setup-indexer { flex: 0 1 190px; min-width: 130px; }
+/* The setup dialog's header (build 113): the show on the left, and the two
+   fields that decide its numbering on the right, where there was already
+   room. They were a block at the bottom of the dialog taking space the search
+   results needed. */
+.setup-header {
+  display: flex; flex-wrap: wrap; align-items: flex-start;
+  justify-content: space-between; gap: 14px;
+}
+/* The cover beside the titles, not above them (build 124). `.selected-anime`
+   is a single-column grid everywhere else it is used, which here turned a
+   56px picture into a panel half the height of the dialog. */
+.setup-header .selected-anime {
+  flex: 1 1 340px; min-width: 0;
+  display: flex; align-items: center; gap: 14px;
+}
+.setup-header-titles { display: grid; gap: 1px; min-width: 0; }
+.setup-header-titles small { display: block; overflow-wrap: anywhere; }
+.setup-header-episodes { color: var(--text-dim); font-variant-numeric: tabular-nums; }
+.setup-numbering {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) auto; align-items: end; gap: 8px;
+  flex: 0 0 auto; width: 100%; box-sizing: border-box;
+  padding: 8px 10px; border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md); background: var(--surface-2);
+}
+.setup-numbering .field { margin: 0; min-width: 0; }
+.setup-numbering .warning-message { grid-column: 1 / -1; margin: 0; }
+.setup-numbering .field span { display: block; font-size: .72rem; white-space: nowrap; margin-bottom: 4px; }
+.setup-numbering input { width: 100%; box-sizing: border-box; }
+.setup-numbering input { padding: 6px 8px; font-variant-numeric: tabular-nums; }
+.setup-numbering .button { white-space: nowrap; padding: 7px 12px; font-size: .8rem; }
+
+/* ---------------------------------------------------------------------------
+   The calendar card: a poster with its name on it (build 145).
+
+   Built from a mock-up. The picture fills the card in portrait, the name and
+   genres sit on the picture, and a strip below carries the kind, the episode
+   count, the stars and the button.
+
+   3:4 rather than square, which was the explicit ask - 225 x 300 is the
+   middle of the three widths offered against a 300 height. Posters are
+   usually 2:3, so `cover` trims a little from the sides; filling the frame is
+   the point.
+
+   Scoped to `.calendar-card` throughout: `.calendar-poster` is also the
+   detail page's artwork and the poster dialog's, and neither wants this shape.
+   --------------------------------------------------------------------------- */
+.calendar-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
+/* minmax(0, 1fr), never plain 1fr: a grid track's automatic minimum is its
+   content's minimum, so a poster's intrinsic width pushes the track wider than
+   the card - 239px inside a 227px card, clipped by overflow:hidden and out of
+   proportion. Found by measuring the rendered page rather than reading it. */
+.calendar-card { grid-template-columns: minmax(0, 1fr); align-items: stretch; }
+.calendar-card .calendar-poster { position: relative; height: auto; aspect-ratio: 3 / 4; }
+.calendar-card .calendar-poster .cover,
+.calendar-card .calendar-poster .cover-placeholder { width: 100%; height: 100%; min-height: 0; object-fit: cover; }
+
+/* The text, on the picture. `pointer-events: none` so the whole card stays one
+   click target - the text is not a thing you press. */
+.calendar-card-text { position: absolute; inset-inline: 0; bottom: 0; display: grid; gap: 1px; padding: 26px 10px 9px; pointer-events: none; background: linear-gradient(to top, rgba(0,0,0,.9) 0%, rgba(0,0,0,.62) 45%, rgba(0,0,0,0) 100%); }
+.calendar-card-text strong,
+.calendar-card-text .genre-line { display: block; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Same colours and sizes as before - only the place has changed. White for the
+   title because it is on artwork now rather than on the card's own surface. */
+.calendar-card-text strong { color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.95); }
+.calendar-card-text .genre-line { text-shadow: 0 1px 3px rgba(0,0,0,.95); }
+
+/* A real stroke, under the glyph, where the browser can put it there.
+   `-webkit-text-stroke` alone centres the stroke on the outline and eats into
+   the letterform; `paint-order` is what moves it behind. Without support the
+   gradient and the shadow above are already enough, so this is additive. */
+@supports (paint-order: stroke) {
+  .calendar-card-text strong,
+  .calendar-card-text .genre-line { -webkit-text-stroke: 2.5px rgba(0,0,0,.55); paint-order: stroke fill; }
+}
+
+/* The strip. `> .calendar-card-foot` rather than the class alone: the base
+   `.calendar-card > div` rule is more specific than a single class and would
+   otherwise keep its 12px padding and grid. */
+.calendar-card > .calendar-card-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 10px 9px; }
+.calendar-card-meta { display: flex; align-items: baseline; gap: 6px; min-width: 0; overflow: hidden; }
+/* The meta line gives way before the button does: a clipped star is a smaller
+   loss than a button that has been pushed out of the card. */
+.calendar-card-meta small { white-space: nowrap; }
+.calendar-card > .calendar-card-foot > .button { flex: 0 0 auto; }
+.calendar-card > .calendar-card-foot > small { flex: 0 0 auto; }
+
+/* One row of calendar controls (build 146): sorting, the filter, then the
+   count and the actions. The filter is centred by being the only thing in the
+   row that grows, and the row keeps its breathing space above so the season
+   heading is not sitting on it. */
+.calendar-tools { margin: 22px 0 16px; gap: 14px; }
+.calendar-tools .calendar-filter { flex: 1 1 200px; max-width: 320px; margin: 0 auto; }
+/* Narrow: the filter takes its own line rather than squeezing the buttons to
+   nothing. */
+@media (max-width: 760px) {
+  .calendar-tools { flex-wrap: wrap; }
+  .calendar-tools .calendar-filter { order: 3; flex-basis: 100%; max-width: none; margin: 0; }
+}
+
+/* A notification with a bar (build 146). It stays until the work it describes
+   is done, so it has to read as a small panel rather than a line of text. */
+.toast.toast-progress { display: grid; gap: 7px; min-width: 240px; text-align: left; }
+.toast.toast-progress .update-bar-track { display: block; width: 100%; }
+
+/* Two filter boxes together in the middle of the controls row (build 147):
+   name and genre. They share the space the single one had, and take their own
+   line before the buttons are squeezed. */
+.calendar-filters { display: flex; flex: 1 1 320px; justify-content: center; gap: 8px; max-width: 460px; margin: 0 auto; }
+.calendar-filters .calendar-filter { flex: 1 1 0; min-width: 0; margin: 0; max-width: none; }
+@media (max-width: 760px) {
+  .calendar-filters { order: 3; flex-basis: 100%; max-width: none; margin: 0; }
+}
+
+/* ---------------------------------------------------------------------------
+   The watchlist card (build 151).
+
+   The name is on the picture, in the calendar's place and the calendar's
+   colours: `.calendar-card-text` does the gradient, the white, the shadow and
+   the stroke, and `.anime-card-text` only sizes it like the calendar's title.
+
+   Two corners on the poster instead of four icons under it. Each has its own
+   corner, so both can be there at once without either moving; the slanted
+   inner edge is what makes them read as part of the poster rather than two
+   buttons put on it. Same height, same weight, and smaller than the mockup -
+   asked for as "a little more subtle".
+   --------------------------------------------------------------------------- */
+.anime-card:focus-visible { outline: 2px solid var(--accent-strong); outline-offset: 2px; }
+.anime-poster { position: relative; display: block; }
+/* A show that has not started: the cover a little darker, never blurred (build 206). */
+.anime-poster[data-unaired] .cover { filter: brightness(.8) saturate(.92); }
+.anime-airs-pill { display: inline-flex; align-items: center; gap: 5px; justify-self: start; max-width: 100%; margin-bottom: 4px; padding: 3px 9px 3px 7px; border-radius: 999px; background: var(--warning); color: #1c1708; font-size: .74rem; font-weight: 700; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: none; -webkit-text-stroke: 0; box-shadow: 0 1px 4px rgba(0, 0, 0, .45); }
+.anime-airs-pill svg { flex: 0 0 auto; }
+/* A started anime nobody set up (build 222, green since 223): the date pill is gone, so this takes its place.
+   Green is also a calendar card whose show has already started. */
+.anime-airs-pill.due, .anime-airs-pill.started { background: var(--success); color: #062a17; }
+.anime-card-text strong { font-size: .92rem; }
+.anime-card > .anime-meta { padding-top: 10px; }
+
+.card-corner {
+  position: absolute; top: 0; z-index: 1;
+  display: inline-flex; align-items: center; justify-content: center;
+  height: 30px; min-width: 34px; margin: 0;
+  color: #fff; font-size: 1rem; font-weight: 700; line-height: 1; letter-spacing: .01em;
+  font-variant-numeric: tabular-nums;
+  border: 0; border-radius: 0;
+  text-shadow: 0 1px 1px rgba(0,0,0,.35);
+}
+.card-corner-attention {
+  left: 0; padding: 0 18px 0 12px; cursor: pointer;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
+  background: var(--danger-border);
+  transition: filter .15s ease;
+}
+.card-corner-attention.yellow { color: #1d1a10; text-shadow: none; background: var(--warning); }
+.card-corner-attention:hover, .card-corner-attention[aria-expanded="true"] { filter: brightness(1.15); }
+.card-corner-attention:focus-visible { outline: 2px solid #fff; outline-offset: -3px; }
+.card-corner-new {
+  right: 0; padding: 0 12px 0 18px; cursor: default;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 10px 100%);
+  background: #2b7fd8;
+}
+
+/* The list behind the red corner. Fixed and drawn into <body>, because the
+   card clips its content and the list has to sit beside it. */
+.attention-bubble {
+  position: fixed; z-index: 60; display: grid; gap: 4px;
+  padding: 14px 16px; border: 1px solid var(--border-strong); border-radius: var(--radius-lg);
+  color: var(--text); background: var(--surface); box-shadow: 0 12px 32px rgba(0,0,0,.45);
+  cursor: default;
+}
+.attention-bubble-title { font-size: .95rem; }
+.attention-bubble-count { color: var(--text-mute); font-size: .78rem; }
+.attention-bubble-list { display: grid; gap: 10px; margin: 10px 0 12px; padding: 0; list-style: none; }
+.attention-bubble-row { display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: 10px; align-items: start; }
+.attention-bubble-row > span:last-child { display: grid; gap: 1px; min-width: 0; }
+.attention-bubble-row strong { font-size: .85rem; }
+.attention-bubble-row small { color: var(--text-dim); font-size: .76rem; overflow-wrap: anywhere; }
+.attention-bubble-mark {
+  display: grid; place-items: center; width: 20px; height: 20px; margin-top: 1px;
+  color: #fff; font-size: .72rem; font-weight: 700; border-radius: 50%; background: var(--text-mute);
+}
+.attention-bubble-row.red .attention-bubble-mark { background: var(--danger-border); }
+.attention-bubble-row.yellow .attention-bubble-mark { color: #1d1a10; background: var(--warning); }
+.attention-bubble-row.green .attention-bubble-mark { background: var(--success-border); }
+.attention-bubble-row.grey { opacity: .7; }
+.attention-bubble-open { justify-self: start; padding: 6px 10px; font-size: .8rem; }
+
+/* ---------------------------------------------------------------------------
+   Build 152.
+
+   The poster on a watchlist card is taller - "the poster part is bigger", the
+   strip under it the same. Scoped to the card: `.cover` is also the detail
+   page's artwork and the Edit dialog's preview.
+   --------------------------------------------------------------------------- */
+.anime-poster .cover, .anime-poster .cover-placeholder { aspect-ratio: 1 / 1.25; }
+
+/* The flag beside a field one of the four checks points at. The same round
+   `!` and the same two colours as the card's corner, so it reads as the same
+   signal wherever it appears. */
+.field-label-row { display: inline-flex; align-items: center; gap: 6px; }
+.field-flag {
+  display: inline-grid; place-items: center; flex: none;
+  width: 16px; height: 16px; border-radius: 50%;
+  color: #fff; font-size: .68rem; font-weight: 700; line-height: 1; font-style: normal;
+  background: var(--danger-border); cursor: help;
+}
+.field-flag.yellow { color: #1d1a10; background: var(--warning); }
+.field input.flagged, .field select.flagged { border-color: var(--danger-border); box-shadow: 0 0 0 1px var(--danger-border) inset; }
+.field input.flagged.yellow, .field select.flagged.yellow { border-color: var(--warning-border); box-shadow: 0 0 0 1px var(--warning-border) inset; }
+.config-edit { display: inline-flex; align-items: center; gap: 7px; }
+
+/* The Checks list at the top of the Edit dialog. */
+.config-checks-ok { margin: 0; color: var(--success); }
+.config-check-list { display: grid; gap: 8px; margin: 10px 0 12px; padding: 0; list-style: none; }
+.config-check { display: grid; grid-template-columns: 16px minmax(0, 1fr) auto; gap: 10px; align-items: start; }
+.config-check .field-flag { margin-top: 2px; }
+.config-check-text { display: grid; gap: 1px; min-width: 0; font-size: .85rem; }
+.config-check-text > span { color: var(--text-dim); }
+.config-check .link-button { color: var(--accent-strong); border: 0; background: transparent; cursor: pointer; padding: 0; font-size: .82rem; white-space: nowrap; }
+.config-check .link-button:hover { text-decoration: underline; }
+
+/* The two names on an episode row, told apart (build 152): the file in the
+   library, and the release the torrent was. Same width for both, so the names
+   start in one column. */
+.name-tag {
+  display: inline-block; box-sizing: border-box; width: 7.2em; margin-right: 10px; padding: 1px 0;
+  font-size: .66rem; font-weight: 600; letter-spacing: .03em; text-align: center; text-transform: uppercase;
+  vertical-align: 1px; border: 1px solid; border-radius: 4px;
+}
+/* The same quiet grey as Source, with the file name's own white (build
+   153): the green stood out further than a label should. */
+.name-tag.target { color: var(--text); border-color: var(--border-strong); background: var(--surface-3); }
+.name-tag.source { color: var(--text-dim); border-color: var(--border-strong); background: var(--surface-3); }
+
+/* One line per check inside a group's row, with its Show link after the
+   sentence rather than in a column of its own (build 153). */
+.config-check { grid-template-columns: 16px minmax(0, 1fr); }
+.config-check-line { display: block; }
+.config-check-line .link-button { margin-left: 8px; }
+
+/* A row in "What the feed offered" (build 153). None of these had a rule:
+   the chip, the percentage and the name ran together as inline text. */
+.analyze-head { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+.analyze-head .chip { flex: none; }
+.analyze-head .confidence { flex: none; min-width: 4ch; color: var(--text-dim); font-variant-numeric: tabular-nums; font-size: .82rem; }
+.analyze-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.analyze-note { display: block; color: var(--warning); font-size: .75rem; }
+
+/* The state line's tag (build 153) takes the line's own colour: green when
+   the episode is in the library, red when it failed, quiet otherwise. */
+.name-tag.status { color: var(--text-dim); border-color: var(--border-strong); background: var(--surface-3); }
+.name-tag.status.good { color: var(--success); border-color: var(--success-border); background: var(--success-bg); }
+.name-tag.status.bad { color: var(--danger); border-color: var(--danger-border); background: var(--danger-bg); }
+/* The state line is smaller type than the file name; the tag is sized in its
+   own ems, so it is pinned to the file name's tag size to line up. */
+.episode-state .name-tag, .episode-second-name .name-tag { font-size: .66rem; }
+
+/* The watchlist card's title may take up to three lines (build 154):
+   *"The title names are very long ... like 80% are cut off."*  A short name
+   stays one line; a longer one wraps, and because the caption is anchored to
+   the bottom of the poster it grows upwards, so the last line always sits
+   where the single line used to. Past three lines it is cut with an ellipsis.
+   Only `.anime-card-text`: the calendar's cards keep their one line. */
+.anime-card-text strong {
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3;
+  white-space: normal; overflow: hidden; overflow-wrap: anywhere; line-height: 1.25;
+}
+
+/* A future entry's way into release matching, under its configuration
+   (build 155). */
+.future-setup { display: grid; gap: 8px; justify-items: start; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+.future-setup p { margin: 0; }
+
+/* The synopsis takes the About panel's whole width (build 156). */
+.config-synopsis { margin-top: 12px; }
+.config-synopsis textarea { width: 100%; box-sizing: border-box; resize: vertical; font: inherit; padding: 9px 11px; color: var(--text); border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--field); }
+.field textarea.flagged { border-color: var(--danger-border); }
+.field textarea.flagged.yellow { border-color: var(--warning-border); }
+
+/* Build 157: the nice-to-have line in the Checks list, and the "+1" on a
+   card - both quieter than what is around them. */
+.config-check-nice { display: block; color: var(--text-mute); }
+.config-check.info .field-flag { display: none; }
+.anime-available { color: var(--text-dim); }
+
+/* The result filter over the list of groups (build 176), and room for the
+   list's scrollbar so it stops overlapping the cards. */
+.setup-result-filter { display: grid; grid-template-columns: minmax(0, 1fr) 130px; gap: 8px; }
+.setup-result-filter input, .setup-result-filter select { min-width: 0; padding: 8px 10px; color: var(--text); border: 1px solid var(--border-strong); border-radius: var(--radius-sm, 6px); background: var(--field); }
+.setup-rows { padding-right: 10px; scrollbar-gutter: stable; }
+/* The results as one card with their own narrowing fields, beside the files card (build 210). */
+.setup-split-list.carded { gap: 8px; padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); }
+.setup-split-list.carded .setup-result-filter { grid-template-columns: minmax(0, 1fr) 110px; gap: 6px; }
+.setup-split-list.carded .setup-result-filter input, .setup-split-list.carded .setup-result-filter select { padding: 5px 9px; font-size: .8rem; }
+.setup-split.open.no-results { grid-template-columns: minmax(0, 1fr); }
+
+/* Air between the search area and its results (build 177). */
+.setup-search-row { margin-bottom: 6px; }
+.setup-split { margin-top: 14px; }
+/* A warning that is meant to be read first, in red on the warning box. */
+.warning-message.indexer-warning { color: var(--danger); border-color: var(--danger); border-left-color: var(--danger); background: rgba(255, 90, 90, .08); }
+
+/* The Subgroup Profiles intro (build 179): the sentence, then its buttons under it. */
+.profiles-intro { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
+
+/* The Shoko page's series as cards (build 180). The same card as the
+   watchlist's, in a grid that fills the panel. */
+.shoko-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px; margin-top: 14px; }
+.shoko-card .shoko-card-ids { padding: 0 12px; margin-top: 2px; overflow-wrap: anywhere; }
+.shoko-card-gap { color: var(--warning); font-size: .84rem; }
+.shoko-card-full { color: var(--success-text, var(--success)); font-size: .84rem; }
+.shoko-detail-poster { width: 170px; flex: 0 0 auto; border-radius: var(--radius-md); overflow: hidden; }
+.shoko-detail-poster .cover, .shoko-detail-poster .cover-placeholder { width: 100%; aspect-ratio: 1 / 1.25; object-fit: cover; }
+.shoko-episodes { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 6px; }
+.shoko-episodes li { display: grid; grid-template-columns: 3.2em minmax(0, 1fr) auto auto; align-items: start; gap: 12px; padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm, 6px); background: var(--surface-2); }
+.shoko-episodes li.missing { border-color: var(--warning-border); }
+.shoko-episode-title { display: grid; gap: 2px; min-width: 0; }
+.shoko-episode-file { overflow-wrap: anywhere; }
+.shoko-episode { font-variant-numeric: tabular-nums; color: var(--text-dim); }
+
+/* AniFlow TV tokens in Settings (build 181). */
+.tv-devices { display: grid; gap: 10px; margin-top: 14px; }
+.tv-device-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; align-items: center; padding: 10px 12px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm, 6px); background: var(--surface-2); }
+.tv-device-row.revoked { opacity: .6; }
+.tv-device-row small { grid-column: 1; }
+.tv-device-row .button { grid-column: 2; grid-row: 1 / span 2; }
+.tv-add-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: end; margin-top: 14px; }
+.tv-token-box { display: grid; gap: 8px; margin-top: 14px; padding: 14px; border: 1px solid var(--accent-strong); border-radius: var(--radius-md); background: var(--surface-2); }
+/* The approval window says what the pairing replaces (build 263). */
+.tv-pair-note { margin: 10px 0 0; padding: 9px 12px; border: 1px solid var(--accent-strong); border-radius: var(--radius-md); background: var(--accent-soft); font-size: .88rem; }
+.tv-pair-replace { display: grid; gap: 6px; margin-top: 10px; }
+.tv-pair-replace p { margin: 0; }
+.tv-pair-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 14px; }
+.dialog input.tv-pair-code { font-family: var(--mono, ui-monospace, monospace); font-size: 1.3rem; letter-spacing: .12em; text-align: center; text-transform: uppercase; }
+.tv-token { font-family: var(--mono, ui-monospace, monospace); font-size: .82rem; overflow-wrap: anywhere; user-select: all; }
+
+/* The add-anime dialog (build 183): wider and taller so more results show at
+   once, a poster in front of each so the anime is recognised by sight, and the
+   genres between the title and the format line. The poster spans the rows. */
+.dialog.dialog-search { width: min(860px, 100%); }
+.dialog-search .search-results { height: min(68vh, 640px); }
+.dialog-search .search-result { grid-template-columns: 56px minmax(0, 1fr); column-gap: 14px; align-items: start; }
+.search-result-cover { grid-column: 1; grid-row: 1 / span 3; width: 56px; height: 80px; object-fit: cover; border-radius: var(--radius-sm, 6px); background: var(--surface-3); }
+.search-result-cover-empty { display: grid; place-items: center; color: var(--text-mute); font-weight: 600; }
+.search-result-title, .search-result-genres, .dialog-search .search-result-meta { grid-column: 2; min-width: 0; }
+
+/* Libraries (build 192, 0.8.5) */
+.library-intro { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+.library-intro p { margin: 0; }
+.library-shoko-note { margin: 16px 0 22px; padding: 10px 12px; border: 1px solid var(--warning-border); border-radius: var(--radius-sm); background: rgba(217, 168, 79, .1); }
+.library-move-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 14px 0 8px; }
+.library-move-list { display: grid; gap: 2px; max-height: min(46vh, 380px); margin: 8px 0; padding: 6px; overflow-y: auto; overscroll-behavior: contain; list-style: none; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); }
+.library-move-row { display: flex; align-items: center; gap: 10px; padding: 6px 8px; }
+.library-row-move { margin-left: 12px; padding: 4px 10px; font-size: .78rem; }
+.library-intro-actions { display: flex; flex-wrap: wrap; gap: 10px; flex: 0 0 auto; }
+.library-refresh-result { display: grid; gap: 10px; margin: 14px 0; }
+.library-refresh-list { margin: 4px 0 0; padding-left: 18px; }
+.library-refresh-line { margin: 4px 0 0; }
+.library-list { display: grid; gap: 10px; margin: 18px 0; padding: 0; list-style: none; }
+.library-row { display: grid; grid-template-columns: 2.2rem minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 14px 16px; border: 1px solid var(--border-strong); border-radius: var(--radius-md); background: var(--surface-2); }
+.library-main { display: grid; gap: 6px; min-width: 0; }
+.library-main strong { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.library-badge { font-weight: 600; }
+.library-folder { font-family: var(--mono, ui-monospace, monospace); font-size: .8rem; color: var(--text); overflow-wrap: anywhere; }
+.library-folder-line { display: flex; align-items: center; gap: 10px; }
+.library-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.library-actions { display: grid; grid-template-columns: repeat(5, 6.8rem); gap: 6px; }
+.library-actions .button { width: 100%; padding: 6px; font-size: .82rem; white-space: nowrap; }
+.library-intro-actions .button { padding: 6px 12px; font-size: .85rem; }
+/* The install wizard's copy of the page (build 253): no Upcoming, no Move anime, so four buttons. */
+.libraries-page.embedded .library-actions { grid-template-columns: repeat(4, 6.8rem); }
+/* The row follows the width of the list it is in, not the window's: in the wizard's card the five buttons
+   used to be wider than the row and sat on top of the text (build 253). */
+.library-list { container-type: inline-size; }
+@container (max-width: 880px) {
+  .library-row { grid-template-columns: 2.2rem minmax(0, 1fr); }
+  .library-actions, .libraries-page.embedded .library-actions { grid-column: 1 / -1; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+.setup-client-select { margin-bottom: 22px; }
+.library-order { display: grid; gap: 4px; align-content: center; }
+.library-order .button { padding: 2px 0; font-size: .7rem; line-height: 1.2; }
+.library-link { justify-self: start; padding: 0; border: 0; background: none; color: var(--accent-strong); font: inherit; cursor: pointer; text-decoration: underline; }
+.rollover-banner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 14px; padding: 10px 14px; border: 1px solid var(--warning-border); border-radius: var(--radius-sm); background: rgba(217, 168, 79, .1); }
+.rollover-banner-actions { display: flex; gap: 8px; }
+.rollover-group { margin: 16px 0 6px; }
+.rollover-group-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.rollover-group-head h3 { margin: 0; }
+.rollover-reason { margin-left: auto; margin-right: 8px; }
+.library-special-head { margin-top: 14px; }
+.library-special-head h2 { margin: 0 0 4px; font-size: 1rem; }
+.library-special-head p { margin: 0; }
+.library-match-list { display: grid; gap: 8px; margin: 14px 0; }
+.library-match-row { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr) 6rem 5.5rem 9rem; gap: 12px; align-items: center; padding: 10px 12px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--surface-2); }
+.library-match-row.library-match-short { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr) 9rem; }
+.library-match-name { font-size: .9rem; overflow-wrap: anywhere; }
+.library-match-action { display: flex; justify-content: flex-end; text-align: right; }
+@media (max-width: 720px) { .library-match-row { grid-template-columns: minmax(0, 1fr); } .library-match-action { justify-content: flex-start; } }
+.library-fits-grid { display: grid; grid-template-columns: minmax(0, 260px); gap: 12px; margin: 18px 0 14px; }
+.library-adult-check { margin-top: 4px; }
+.library-field { margin-top: 18px; }
+.library-folder-box { flex: 1 1 auto; display: flex; align-items: center; min-width: 0; height: 38px; padding: 0 11px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--field); color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.library-folder-button { display: grid; place-items: center; flex: 0 0 auto; width: 40px; height: 38px; padding: 0; }
+.folder-tree { display: grid; align-content: start; height: min(52vh, 420px); margin-top: 14px; padding: 6px; overflow-y: auto; overscroll-behavior: contain; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); }
+.folder-tree-row { display: flex; align-items: center; gap: 8px; width: 100%; padding-top: 8px; padding-bottom: 8px; padding-right: 10px; text-align: left; color: var(--text); border: 0; border-radius: var(--radius-sm); background: transparent; cursor: pointer; }
+.folder-tree-row:hover { background: var(--surface-3); }
+.folder-tree-row.is-selected { color: var(--accent-strong); background: var(--surface-3); }
+.folder-tree-chevron { display: inline-block; width: 14px; color: var(--text-mute); text-align: center; transition: transform .12s ease; }
+.folder-tree-chevron.is-open { transform: rotate(90deg); }
+.folder-tree-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.folder-tree-empty { margin: 2px 0 6px; font-size: .82rem; }
+@media (max-width: 720px) {
+  .library-row { grid-template-columns: 2.2rem minmax(0, 1fr); }
+  .library-actions { grid-column: 1 / -1; }
+  .library-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .library-special-head { margin-top: 14px; }
+.library-special-head h2 { margin: 0 0 4px; font-size: 1rem; }
+.library-special-head p { margin: 0; }
+.library-fits-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Subgroup coverage (build 193) */
+.subgroup-section { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 18px 0 8px; }
+.subgroup-window { display: inline-flex; gap: 6px; margin-left: auto; }
+.subgroup-list { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.subgroup-row { display: grid; grid-template-columns: minmax(0, 1.2fr) 64px 80px 64px minmax(0, 3fr); gap: 12px; align-items: center; padding: 8px 12px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--surface-2); }
+.subgroup-head { border-color: transparent; background: transparent; font-size: .74rem; text-transform: uppercase; letter-spacing: .06em; }
+.subgroup-feeds { display: flex; flex-wrap: wrap; gap: 6px; min-width: 0; }
+.subgroup-silent { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; padding: 8px 12px; border: 1px solid var(--warning-border); border-radius: var(--radius-sm); background: var(--surface-2); }
+@media (max-width: 720px) {
+  .subgroup-row { grid-template-columns: minmax(0, 1fr) 56px 56px 56px; }
+  .subgroup-feeds { grid-column: 1 / -1; }
+}
+
+/* What adopting could not fill in (build 194) */
+.adopt-problems { margin: 6px 0 0; padding-left: 18px; }
+
+/* What scanning an anime's folder found (build 198) */
+.scan-files-result { display: grid; gap: 4px; margin-top: 12px; }
+.scan-files-result p { margin: 0; }
+
+/* The Configuration box on an anime's page: three items to a column (build 199) */
+.config-columns { display: grid; grid-auto-flow: column; grid-template-rows: repeat(3, auto); grid-auto-columns: minmax(0, 1fr); gap: 8px 36px; margin: 10px 0 0; font-size: .84rem; }
+.config-item { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 4px 14px; align-items: baseline; min-width: 0; }
+.config-item dt { color: var(--text-mute); }
+.config-item dd { margin: 0; color: var(--text); word-break: break-word; }
+@media (max-width: 760px) {
+  .config-columns { grid-auto-flow: row; grid-template-rows: none; grid-auto-columns: auto; grid-template-columns: minmax(0, 1fr); }
+}
+
+/* The suggestions under an empty search box (build 208). */
+.suggest-head { margin: 14px 0 6px; font-size: .78rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--text-dim); }
+
+/* The clear "x" on every text field (build 210), drawn once by InputClearButton. Fixed, so it stays put
+   inside scrolling dialogs; above the dialogs (z-index 10) and the toasts (40). */
+.input-clear-button { position: fixed; z-index: 1000; width: 24px; padding: 0; display: grid; place-items: center; cursor: pointer; font-size: 1rem; line-height: 1; color: var(--text-mute); border: 0; background: transparent; }
+.input-clear-button:hover { color: var(--text); }
+/* Room for it, so typing is never under it. The older wrapper keeps its own 30px. */
+input:is(:not([type]), [type="text"], [type="search"], [type="url"], [type="email"], [type="tel"], [type="password"]):not(.input-clear *) { padding-right: 26px; }
+/* The browser draws a second x in a search field; ours replaces it. */
+input[type="search"]::-webkit-search-cancel-button { display: none; -webkit-appearance: none; }
+
+/* Saying by hand which file is which episode (build 213). */
+.assign-dialog { display: flex; flex-direction: column; max-height: min(86vh, 900px); }
+.assign-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 6px 0 10px; }
+.assign-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; overflow-y: auto; min-height: 0; padding-right: 8px; }
+.assign-row { display: grid; grid-template-columns: minmax(0, 1fr) 150px; gap: 12px; align-items: center; padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm, 6px); background: var(--surface); }
+.assign-row.clash { border-color: var(--warning); }
+.assign-name { min-width: 0; overflow-wrap: anywhere; font-size: .85rem; }
+.assign-row select { min-width: 0; padding: 6px 8px; color: var(--text); border: 1px solid var(--border-strong); border-radius: var(--radius-sm, 6px); background: var(--field); }
+
+/* Taking single episodes out of a batch (build 213). */
+.batch-note { display: grid; gap: 3px; padding: 9px 12px; border: 1px solid var(--accent); border-radius: var(--radius-sm, 6px); background: var(--accent-soft); }
+.batch-note p { margin: 0; }
+.batch-note small { overflow-wrap: anywhere; }
+.scan-table tr.scan-row-batch td { background: var(--accent-soft); }
+.batch-tag { display: block; margin-top: 2px; color: var(--accent); font-size: .72rem; font-weight: 600; }
+
+/* The round arrow back to the top of a long page (build 237). Under dialogs (z 10) and toasts (z 40). */
+.back-to-top {
+  position: fixed; right: 24px; bottom: 24px; z-index: 9;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 46px; height: 46px; padding: 0; cursor: pointer;
+  color: #fff; border: 1px solid var(--border-strong); border-radius: 50%;
+  background: var(--accent-strong); box-shadow: 0 8px 24px rgba(0,0,0,.4);
+  transition: filter .15s ease, transform .15s ease;
+}
+.back-to-top:hover { filter: brightness(1.15); transform: translateY(-2px); }
+.back-to-top:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .back-to-top { transition: none; } .back-to-top:hover { transform: none; } }
+.mylist-filters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px 16px; margin: 10px 0; }
+.mylist-types { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; margin: 6px 0 12px; }
+.mylist-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: .88rem; }
+.mylist-table th { text-align: left; font-weight: 600; color: var(--text-dim); padding: 6px 10px; border-bottom: 1px solid var(--border-strong); }
+.mylist-table td { padding: 6px 10px; border-bottom: 1px solid var(--border); }
+.mylist-table th:nth-last-child(2), .mylist-table td:nth-last-child(2) { text-align: right; white-space: nowrap; }
+.mylist-table th:last-child, .mylist-table td.mylist-action { text-align: right; white-space: nowrap; padding-left: 16px; }
+/* The three question tabs of the AniDB page (build 259): six columns, not five. The rules above make the
+   second-to-last column a narrow right-aligned one - right for "Eps" in the five-column list, wrong for the Details
+   that comes next here, which squeezed the title into a sliver beside a wide empty cell. The title gets the room. */
+.mylist-table.problems { table-layout: auto; }
+.mylist-table.problems th:first-child, .mylist-table.problems td:first-child { width: 42%; overflow-wrap: anywhere; }
+.mylist-table.problems th:nth-last-child(2), .mylist-table.problems td:nth-last-child(2) { text-align: left; white-space: normal; }
+.mylist-table.problems th:nth-child(4), .mylist-table.problems td:nth-child(4) { text-align: right; white-space: nowrap; }
+@media (max-width: 640px) { .mylist-filters { grid-template-columns: minmax(0, 1fr); } }
+/* What to do about a file Shoko has not filed (item 2): Run import and Open Shoko, side by side. */
+.shoko-help { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 6px; }
+.shoko-help.compact .button { padding: 4px 10px; font-size: .8rem; }
+
+/* The Show link of a read-only field (build 266): a brief flash, so a click is seen to land. */
+.config-flash { animation: config-flash 1.6s ease-out; }
+@keyframes config-flash { from { background: var(--accent-soft); } to { background: transparent; } }

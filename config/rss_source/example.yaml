@@ -1,0 +1,10 @@
+# EXAMPLE - AniFlow ignores this file.
+#
+# One file is one feed AniFlow may scan. Copy it to a real name and edit that.
+
+name: Example feed
+url: https://example.tld/?page=rss
+
+# Whether AniFlow scans it, and whether new anime use it by default.
+enabled: true
+default: false

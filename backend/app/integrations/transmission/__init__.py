@@ -1,0 +1,1 @@
+"""Transmission integration adapter."""

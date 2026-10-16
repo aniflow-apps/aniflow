@@ -1,0 +1,10 @@
+# Keeps this directory in the repository.
+#
+# docker-compose bind-mounts ./config to /config, where the editable settings
+# file aniflow.yaml and the log (log/aniflow.log) live. If the directory is
+# missing, Docker creates it and then chmods it - which some hosts (TrueNAS
+# SCALE datasets with NFSv4 ACLs and aclmode=restricted) refuse with
+# "operation not permitted", and the container never starts.
+#
+# The log/ subfolder is created by AniFlow itself and is deliberately not
+# checked in.

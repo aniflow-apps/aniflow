@@ -1,0 +1,27 @@
+# EXAMPLE - AniFlow ignores this file.
+#
+# One file is one subgroup profile: a named set of release rules you can apply
+# to any anime. Copy it to a real name and edit that.
+
+name: Example 1080p
+
+# Which release groups are acceptable. Empty means any.
+subgroups:
+  - ExampleGroup
+
+# Empty (or removed) means any.
+resolution: 1080p
+media_source: null
+
+# ANY | UNCENSORED | CENSORED
+censor_preference: ANY
+
+# The checks a release has to pass. require_title_match should stay on unless
+# you know why you are turning it off.
+require_title_match: true
+require_resolution_known: false
+require_source_known: false
+require_censor_known: false
+
+# Applied to new anime unless you pick another one.
+default: false

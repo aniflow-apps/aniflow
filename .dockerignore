@@ -1,0 +1,35 @@
+# Host-specific: copying a Windows node_modules over the image's Linux one breaks the build.
+node_modules/
+**/node_modules/
+.venv/
+venv/
+**/__pycache__/
+**/*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Built inside the image
+frontend/dist/
+frontend_dist/
+
+# Runtime state, tests and the full-size logo stay out of the image
+data/
+log/
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+*.log
+backend/tests/
+backend/requirements-dev.txt
+/logo.png
+
+.git/
+.gitignore
+.env
+.env.*
+!.env.example
+.idea/
+.vscode/
+*.tmp.html

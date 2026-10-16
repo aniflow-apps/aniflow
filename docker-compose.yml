@@ -1,0 +1,25 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    pull_policy: build
+    ports:
+      - "${APP_PORT:-9630}:${APP_PORT:-9630}"
+    env_file:
+      - .env
+    environment:
+      TZ: ${TZ:-UTC}
+    user: "${PUID:-1000}:${PGID:-1000}"
+    volumes:
+      - ./config:/config
+      - ./data:/data
+      # One media mount (the default) works for every library: a library may be
+      # /media itself or any subfolder. Mount further folders yourself if you
+      # prefer one mount per library.
+      - ${ANIME_LIBRARY_HOST_PATH:-./media/anime}:/media
+      - ${DOWNLOAD_HOST_PATH:-./downloads}:/downloads
+      # Shoko Server mode only: its hand-over folder. Put it on the same dataset
+      # as /media so Shoko moves files instead of copying them.
+      # - ${IMPORT_HOST_PATH:-./media/import}:/import
+    restart: unless-stopped
