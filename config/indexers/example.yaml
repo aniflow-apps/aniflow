@@ -1,0 +1,28 @@
+# EXAMPLE - AniFlow ignores this file (any file named example, readme or template).
+# Copy it to a real name (my-site.yaml) and edit that. One file is one indexer;
+# AniFlow picks it up without a restart.
+
+name: Example
+url: https://example.tld
+
+# How the site is searched. {base} is the url above, {query} is required,
+# {page} is the page number.
+search_url: "{base}/?page=rss&c=1_2&q={query}&s=seeders&o=desc&p={page}"
+
+# Optional: where releases named in the original (Japanese) language are filed,
+# for sites that sort by translation language.
+# search_url_native: "{base}/?page=rss&c=1_3&q={query}&s=seeders&o=desc&p={page}"
+
+# Optional: lets this indexer also set up an RSS source for the site.
+rss_url: "{base}/?page=rss&c=1_2"
+
+# Optional: mark everything from this site as Adult.
+# adult: true
+
+enabled: true
+default: false     # the one used by default
+
+# Optional: several addresses for one site (the first is used, the rest recognised).
+# sites:
+#   - https://example.tld
+#   - https://mirror.example.tld

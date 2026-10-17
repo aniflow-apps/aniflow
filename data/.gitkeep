@@ -1,0 +1,6 @@
+# Keeps this directory in the repository.
+#
+# docker-compose bind-mounts ./data to /app/data (the SQLite database lives
+# here). If the directory is missing, Docker creates it and then chmods it -
+# which some hosts (TrueNAS SCALE datasets with NFSv4 ACLs) refuse with
+# "operation not permitted", and the container never starts.

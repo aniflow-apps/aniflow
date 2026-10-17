@@ -1,0 +1,69 @@
+# Daylight - the bright one.
+#
+# A light theme is not a dark theme with the colours swapped. Two things had
+# to change beyond that:
+#
+# * the surfaces run the other way round. In the dark themes a panel is
+#   *lighter* than the page; here the page is a soft grey and panels are
+#   white, because a white page with grey panels reads as disabled.
+# * the accent, success, warning and danger colours are darkened. A colour
+#   that is legible on #12151c is not legible on white - #f9c851 on white is
+#   a warning nobody can read.
+
+name: Daylight
+author: AniFlow
+version: "1.0"
+description: A bright theme for a bright room. Panels are white on a soft grey page.
+
+themes_api: 1
+
+# What the browser paints its own widgets with - dropdown popups, scrollbars,
+# focus rings. None of those are AniFlow's markup, so no colour above reaches
+# them. dark or light.
+color_scheme: light
+
+colors:
+  # Soft grey rather than white, so a white panel has something to sit on.
+  bg: "#f2f4f7"
+  bg-deep: "#e7eaf0"
+
+  surface: "#ffffff"
+  surface-2: "#f7f9fb"
+  surface-3: "#eef1f6"
+  # Darker rather than lighter here - a lift on white has to be a shadow.
+  surface-raised: "rgba(15, 23, 42, 0.03)"
+
+  field: "#ffffff"
+
+  border: "#dfe4ec"
+  border-strong: "#c6cedb"
+
+  # Not pure black: #111 on white is easier on the eyes for long lists than
+  # #000, and the two quieter steps stay readable rather than becoming grey
+  # on grey.
+  text: "#1b2430"
+  text-dim: "#4a5666"
+  text-mute: "#6b7787"
+
+  accent: "#0b62d6"
+  accent-strong: "#0a52b4"
+  accent-soft: "#0b62d614"
+  # What is written on a filled accent button - white, on this accent.
+  accent-ink: "#ffffff"
+  accent-nav: "#0a52b4"
+
+  success: "#0a7f4b"
+  success-border: "#0a7f4b66"
+  success-bg: "#0a7f4b14"
+
+  warning: "#8a5a00"
+  warning-border: "#8a5a0066"
+
+  danger: "#b3261e"
+  danger-border: "#b3261e66"
+  danger-bg: "#b3261e14"
+
+radius:
+  lg: 10px
+  md: 8px
+  sm: 6px

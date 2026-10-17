@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+
+# Node
+frontend/node_modules/
+frontend/dist/
+frontend/coverage/
+
+# Runtime data and secrets
+.env
+data/
+!data/
+!data/.gitkeep
+data/*.tgz
+data/anidb-mylist.json
+*.db
+*.sqlite3
+
+# A deployment's own configuration: only the examples are committed
+config/*
+!config/.gitkeep
+!config/*.example
+!config/*.yaml.example
+!config/indexers/
+!config/rss_source/
+!config/subgroup/
+config/indexers/*
+config/rss_source/*
+config/subgroup/*
+!config/indexers/example.yaml
+!config/rss_source/example.yaml
+!config/subgroup/example.yaml
+
+# IDE / OS
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
+
+# Written by scripts/run_tests_parallel.py
+.test-timings.json

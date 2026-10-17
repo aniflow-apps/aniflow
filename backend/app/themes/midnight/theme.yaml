@@ -1,0 +1,61 @@
+# Midnight - darker than the default, and cooler.
+#
+# For a room with the lights off and an OLED panel: the page is close to
+# black, panels are separated by their borders rather than by brightness, and
+# the accent is the only saturated thing on screen.
+
+name: Midnight
+author: AniFlow
+version: "1.0"
+description: Nearly black, for a dark room. Panels are told apart by their borders.
+
+themes_api: 1
+
+# What the browser paints its own widgets with - dropdown popups, scrollbars,
+# focus rings. None of those are AniFlow's markup, so no colour above reaches
+# them. dark or light.
+color_scheme: dark
+
+colors:
+  bg: "#0b0d12"
+  bg-deep: "#06070a"
+
+  # Three steps, each one small. On a very dark palette a big step between
+  # page and panel reads as a glowing box.
+  surface: "#12151c"
+  surface-2: "#0f1219"
+  surface-3: "#1b1f28"
+  surface-raised: "rgba(255, 255, 255, 0.03)"
+
+  field: "#080a0e"
+
+  # The borders do the work here, so they are lighter relative to the
+  # surfaces than in the default theme.
+  border: "#1c212b"
+  border-strong: "#2b323f"
+
+  text: "#dbe3ee"
+  text-dim: "#9aa5b4"
+  text-mute: "#6e7887"
+
+  accent: "#6f7cff"
+  accent-strong: "#8f99ff"
+  accent-soft: "#8f99ff1f"
+  accent-ink: "#05060d"
+  accent-nav: "#c3c9ff"
+
+  success: "#2fd08a"
+  success-border: "#1c8f5c"
+  success-bg: "#2fd08a1a"
+
+  warning: "#ffcc66"
+  warning-border: "#a8802e"
+
+  danger: "#ff7a7a"
+  danger-border: "#a54545"
+  danger-bg: "#ff7a7a1a"
+
+radius:
+  lg: 12px
+  md: 9px
+  sm: 6px

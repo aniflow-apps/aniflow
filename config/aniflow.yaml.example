@@ -1,0 +1,105 @@
+# AniFlow settings - EXAMPLE only; AniFlow never reads it. The real file, aniflow.yaml, is
+# created on first start; the Settings page and a text editor both write it.
+# A line you delete falls back to the environment, then to the default shown here.
+
+# Torrent client
+torrent_client: qbittorrent        # qbittorrent | deluge | transmission
+qb_url: null
+qb_username: admin
+qb_password: ''
+qb_category: AniFlow
+
+# Finished downloads
+file_operation: copy
+after_import_action: pause
+# When you change an anime's release: backup (rename old files to .backup) | replace (delete them)
+reacquire_mode: backup
+torrent_monitor_interval_seconds: 30
+torrent_monitor_enabled: true
+
+# Feeds
+rss_enabled: true
+rss_scan_interval_minutes: 30
+
+# Scheduled passes (see the Schedule page). Intervals are in seconds.
+anidb_identity_refresh_enabled: true
+anidb_identity_refresh_interval_seconds: 604800    # never more than weekly, whatever you set
+shoko_status_enabled: true
+shoko_status_interval_seconds: 3600
+torrent_housekeeping_enabled: true
+torrent_housekeeping_interval_seconds: 21600
+attention_review_enabled: true
+attention_review_interval_seconds: 1800
+conversion_review_enabled: true
+conversion_review_interval_seconds: 21600
+disk_recheck_enabled: true
+disk_recheck_interval_seconds: 21600
+
+# Calendar
+calendar_hide_in_library: true
+calendar_hide_adult: true
+calendar_hide_no_cover: false
+calendar_sort: airing              # airing | name | popularity
+calendar_hidden_kinds: MUSIC,CM,PV # comma-separated, upper case
+calendar_mark_sequels: true
+calendar_show_popularity: true
+calendar_auto_update: true
+calendar_auto_update_interval_seconds: 604800
+
+# Dates and times
+time_format: 24h                   # 24h | 12h
+date_format: dmy                   # dmy | mdy | ymd
+timezone: ''                       # IANA name; empty uses the TZ variable
+
+# Search
+search_enabled: true
+search_max_pages: 3
+search_max_results: 200
+
+# Logging (empty log_components = all)
+log_level: ERROR
+log_components: null
+log_component_levels: null
+
+# Metadata source: anilist | kitsu. Switching rebuilds the calendar from the new source.
+metadata_provider: anilist
+
+# Interface
+language: en                       # en | de
+theme: aniflow-dark
+toast_corner: top-right            # top-right | top-left | bottom-right | bottom-left
+
+# Season changes: ask | auto | off
+season_rollover: ask
+
+# Start new anime with Automate on
+automate_new_anime: true
+
+# Developer tools (Debug tab, repair buttons). They delete files and rewrite
+# database rows: leave this off unless you are developing AniFlow.
+debug_mode: false
+
+# MyAnimeList client id (the Client ID only, from https://myanimelist.net/apiconfig). Empty skips that source.
+mal_client_id: ''
+
+# Shoko Server API, optional. Handing files over to Shoko needs neither.
+shoko_url: ''
+shoko_api_key: ''
+
+# Empty = Basic when no indexer is configured, Advanced otherwise. basic | advanced forces one.
+app_mode_override: ''
+
+# Proxy for AniFlow's own internet requests (metadata, indexers, feeds). Your torrent
+# client and Shoko always go direct, and torrent traffic is the client's own: set a
+# proxy there for that.
+proxy_kind: none                   # none | http | socks4 | socks5 | socks5h (socks5h resolves names at the proxy)
+proxy_host: ''
+proxy_port: null
+proxy_username: ''
+proxy_password: ''
+proxy_check_url: ''                 # empty uses the built-in address-check services
+
+# Title preference, best first. Any of: english, romaji, alternative, japanese.
+title_search_order: romaji,english,alternative,japanese    # what is asked of an indexer
+title_folder_order: english,romaji,alternative,japanese    # the folder AniFlow creates (not in Shoko mode)
+title_display_order: english,romaji,alternative,japanese   # what the screens show
